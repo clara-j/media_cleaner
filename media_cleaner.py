@@ -64,7 +64,7 @@ def get_auth_key(server_url, username, password):
 
     print (server_url)
 
-    headers = {'X-Emby-Authorization': 'Emby UserId="9c2e26a2c9324e7aa26e9729d06e2473", Client="(string)", Device="(string)", DeviceId="(string)", Version="string", Token="(string)'}
+    headers = {'X-Emby-Authorization': 'Emby UserId="'+ username  +'", Client="media_cleaner", Device="media_cleaner", DeviceId="media_cleaner", Version="0.1", Token="'}
 
     req = request.Request(url=server_url + '/emby/Users/AuthenticateByName', data=DATA,method='POST', headers=headers)
 
