@@ -7,7 +7,6 @@ import sys
 from dateutil.parser import parse
 from datetime import datetime,date,timedelta,timezone
 
-
 # Hash password if not hashed
 #if cfg.admin_password_sha1 == '':
 #     cfg.admin_password_sha1=hashlib.sha1(cfg.admin_password.encode()).hexdigest()
@@ -36,7 +35,10 @@ def generate_config():
     config_file += "admin_username='"+ username +"'\n"
     config_file += "admin_password_sha1='"+ password_hash +"'\n"
     config_file += "remove_files=0\n"
-
+    config_file += "video_action='delete'\n"
+    config_file += "movie_action='delete'\n"
+    config_file += "episode_action='delete'\n"
+    config_file += "DEBUG=0\n"
 
     f = open("media_cleaner_config.py", "w")
     f.write(config_file)
@@ -50,7 +52,10 @@ def delete_item(itemID):
     if not bool(cfg.remove_files):
         return
 
-    req = request.Request(url=cfg.server_url + '/emby/Items/' + itemID + '?api_key='+ auth_key,method='DELETE')
+    url=url=cfg.server_url + '/emby/Items/' + itemID + '?api_key='+ auth_key
+    if bool(cfg.DEBUG):
+        print(url)
+    req = request.Request(url,method='DELETE')
     request.urlopen(req)
 
 
@@ -100,7 +105,10 @@ def list_users(server_url, auth_key):
 
 def get_items(server_url, user_key, auth_key):
     #Get list of all played items
-    with request.urlopen(server_url + '/emby/Users/' + user_key  + '/Items?Recursive=true&IsPlayed=true&api_key=' + auth_key) as response:
+    url=server_url + '/emby/Users/' + user_key  + '/Items?Recursive=true&IsPlayed=true&api_key=' + auth_key
+    if bool(cfg.DEBUG):
+        print(url)
+    with request.urlopen(url) as response:
         if response.getcode() == 200:
             source = response.read()
             data = json.loads(source)
@@ -113,8 +121,13 @@ def get_items(server_url, user_key, auth_key):
     deleteItems=[]
 
     for item in data['Items']:
-        item_details=item['Name'] + ' - ' + item['UserData']['LastPlayedDate'] + ' - ' + item['UserData']['Key'] + ' - ' + item['Id']
-        if cut_off_date  > parse(item['UserData']['LastPlayedDate']):
+        item_details=item['Type'] +' - '+ item['Name'] +' - ' + item['UserData']['LastPlayedDate'] + ' - ' + item['UserData']['Key'] + ' - ' + item['Id']
+        if (
+                cut_off_date  > parse(item['UserData']['LastPlayedDate']) and ( 
+                (item['Type'] == 'Movie' and cfg.movie_action == 'delete') or
+                (item['Type'] == 'Episode' and cfg.episode_action == 'delete') or
+                (item['Type'] == 'Video' and cfg.video_action == 'delete') )
+                ):
             print('Delete - ' + item_details)
             deleteItems.append(item)
         else:
@@ -133,7 +146,8 @@ def list_items(deleteItems):
 
 try:
     import media_cleaner_config as cfg
-except ModuleNotFoundError:
+    test=cfg.DEBUG
+except (AttributeError, ModuleNotFoundError):
     generate_config()
     exit(0)
 
