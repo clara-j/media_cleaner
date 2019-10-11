@@ -121,7 +121,11 @@ def get_items(server_url, user_key, auth_key):
     deleteItems=[]
 
     for item in data['Items']:
-        item_details=item['Type'] +' - '+ item['Name'] +' - ' + item['UserData']['LastPlayedDate'] + ' - ' + item['UserData']['Key'] + ' - ' + item['Id']
+        try:
+            item_details=item['Type'] +' - '+ item['Name'] +' - ' + item['UserData']['LastPlayedDate'] + ' - '+ str(item['UserData']['IsFavorite'])  + ' - ' + item['Id']
+        except (KeyError):
+            print('Error encounter:\n\n' + str(item))
+            exit(1)
         if (
                 cut_off_date  > parse(item['UserData']['LastPlayedDate']) and ( 
                 (item['Type'] == 'Movie' and cfg.movie_action == 'delete') or
@@ -133,7 +137,6 @@ def get_items(server_url, user_key, auth_key):
         else:
             print('Keep   - ' + item_details)
     return(deleteItems)
-
 
 def list_items(deleteItems):
     #List items to be deleted
@@ -154,3 +157,4 @@ except (AttributeError, ModuleNotFoundError):
 auth_key=get_auth_key(cfg.server_url, cfg.admin_username, cfg.admin_password_sha1)
 deleteItems=get_items(cfg.server_url, cfg.user_key, auth_key)
 list_items(deleteItems)
+
