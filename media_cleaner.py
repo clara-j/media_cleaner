@@ -142,7 +142,7 @@ def list_items(deleteItems):
     #List items to be deleted
     print('\n\nItems to be deleted')
     for item in deleteItems:
-        item_details=item['Name'] + ' - ' + item['UserData']['LastPlayedDate'] + ' - ' + item['UserData']['Key'] + ' - ' + item['Id']
+        item_details=item['Name'] + ' - ' + item['UserData']['LastPlayedDate'] + ' - ' + item['Id']
         print('----' + item_details)
         delete_item(item['Id'])
 
@@ -157,4 +157,3 @@ except (AttributeError, ModuleNotFoundError):
 auth_key=get_auth_key(cfg.server_url, cfg.admin_username, cfg.admin_password_sha1)
 deleteItems=get_items(cfg.server_url, cfg.user_key, auth_key)
 list_items(deleteItems)
-
