@@ -12,6 +12,11 @@ filename: media_cleaner_config.py
 * admin_username='UserName'  - Username for Admin user with access to delete files
 * admin_password_sha1='YYYYYYYYYYYYY'  - SHA1 hashed password value
 * remove_files=0  - 0 means trial run, no delete.  1 means remove files
+* video_action='delete' - Delete video type files like home video library category
+* movie_action='delete' - Delete movie type files
+* episode_action='delete' - Delete TV type file
+* DEBUG=1 - Display extra info to screen for debuging
+* ignore_favorites=1 - Ignore videos that have been marked as favorite
 
 # Usage
 Make media_cleaner.py executable and run ./media_cleaner.py.  If no conifg file is found it will prompt you to create one.  Once done you can run the script again to view files that will be deleted
