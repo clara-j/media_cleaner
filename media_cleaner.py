@@ -39,6 +39,7 @@ def generate_config():
     config_file += "movie_action='delete'\n"
     config_file += "episode_action='delete'\n"
     config_file += "DEBUG=0\n"
+    config_file += "ignore_favorites=1\n"
 
     f = open("media_cleaner_config.py", "w")
     f.write(config_file)
@@ -127,7 +128,9 @@ def get_items(server_url, user_key, auth_key):
             print('Error encounter:\n\n' + str(item))
             exit(1)
         if (
-                cut_off_date  > parse(item['UserData']['LastPlayedDate']) and ( 
+                cut_off_date  > parse(item['UserData']['LastPlayedDate']) and 
+                (not bool(cfg.ignore_favorites) or not item['UserData']['IsFavorite']) and
+                (
                 (item['Type'] == 'Movie' and cfg.movie_action == 'delete') or
                 (item['Type'] == 'Episode' and cfg.episode_action == 'delete') or
                 (item['Type'] == 'Video' and cfg.video_action == 'delete') )
@@ -150,6 +153,12 @@ def list_items(deleteItems):
 try:
     import media_cleaner_config as cfg
     test=cfg.DEBUG
+
+    if not hasattr(cfg, 'ignore_favorites'):
+        print('Old config in use, using default value of:')
+        print('ignore_favorites=1')
+        setattr(cfg, 'ignore_favorites', 1)
+
 except (AttributeError, ModuleNotFoundError):
     generate_config()
     exit(0)
@@ -157,3 +166,5 @@ except (AttributeError, ModuleNotFoundError):
 auth_key=get_auth_key(cfg.server_url, cfg.admin_username, cfg.admin_password_sha1)
 deleteItems=get_items(cfg.server_url, cfg.user_key, auth_key)
 list_items(deleteItems)
+
+
