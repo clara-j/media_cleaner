@@ -198,10 +198,10 @@ def get_items(server_url, user_key, auth_key):
 
     for item in data['Items']:
         if   (
+             (item['Type'] == 'Movie') and
              (cfg.not_played_age_movie >= 0) and
              (cut_off_date_movie > parse(item['UserData']['LastPlayedDate'])) and
-             (not bool(cfg.ignore_favorites_movie) or not item['UserData']['IsFavorite']) and
-             (item['Type'] == 'Movie')
+             (not bool(cfg.ignore_favorites_movie) or not item['UserData']['IsFavorite'])
              ):
             try:
                 item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite'])  + ' - ' + 'MovieID: ' + item['Id']
@@ -211,10 +211,10 @@ def get_items(server_url, user_key, auth_key):
             print(':*[DELETE] - ' + item_details)
             deleteItems.append(item)
         elif (
+             (item['Type'] == 'Episode') and
              (cfg.not_played_age_episode >= 0) and
              (cut_off_date_episode > parse(item['UserData']['LastPlayedDate'])) and
-             (not bool(cfg.ignore_favorites_episode) or not item['UserData']['IsFavorite']) and
-             (item['Type'] == 'Episode')
+             (not bool(cfg.ignore_favorites_episode) or not item['UserData']['IsFavorite'])
              ):
             try:
                 item_details=item['Type'] + ' - ' + item['SeriesName'] + ' - ' + item['Name'] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite'])  + ' - ' + 'EpisodeID: ' + item['Id']
@@ -224,10 +224,10 @@ def get_items(server_url, user_key, auth_key):
             print(':*[DELETE] - ' + item_details)
             deleteItems.append(item)
         elif (
+             (item['Type'] == 'Video') and
              (cfg.not_played_age_video >= 0) and
              (cut_off_date_video > parse(item['UserData']['LastPlayedDate'])) and
-             (not bool(cfg.ignore_favorites_video) or not item['UserData']['IsFavorite']) and
-             (item['Type'] == 'Video')
+             (not bool(cfg.ignore_favorites_video) or not item['UserData']['IsFavorite'])
              ):
             try:
                 item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate']) + ' -  Favorite: ' + str(item['UserData']['IsFavorite'])  + ' - ' + 'VideoID: ' + item['Id']
@@ -237,10 +237,10 @@ def get_items(server_url, user_key, auth_key):
             print(':*[DELETE] - ' + item_details)
             deleteItems.append(item)
         elif (
+             (item['Type'] == 'Trailer') and
              (cfg.not_played_age_trailer >= 0) and
              (cut_off_date_trailer > parse(item['UserData']['LastPlayedDate'])) and
-             (not bool(cfg.ignore_favorites_trailer) or not item['UserData']['IsFavorite']) and
-             (item['Type'] == 'Trailer')
+             (not bool(cfg.ignore_favorites_trailer) or not item['UserData']['IsFavorite'])
              ):
             try:
                 item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate']) + ' -  Favorite: ' + str(item['UserData']['IsFavorite'])  + ' - ' + 'TrailerID: ' + item['Id']
@@ -250,42 +250,41 @@ def get_items(server_url, user_key, auth_key):
             print(':*[DELETE] - ' + item_details)
             deleteItems.append(item)
         else:
-            if   item['Type'] == 'Movie':
+            if   (item['Type'] == 'Movie'):
                 try:
                     item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite'])  + ' - ' + 'MovieID: ' + item['Id']
                 except (KeyError):
                     print('Error encounter: \n\n' + str(item))
                     exit(1)
                 print(':[KEEPING] - ' + item_details)
-            elif item['Type'] == 'Episode':
+            elif (item['Type'] == 'Episode'):
                 try:
                     item_details=item['Type'] + ' - ' + item['SeriesName'] + ' - ' + item['Name'] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite'])  + ' - ' + 'EpisodeID: ' + item['Id']
                 except (KeyError):
                     print('Error encounter: \n\n' + str(item))
                     exit(1)
                 print(':[KEEPING] - ' + item_details)
-            elif item['Type'] == 'Video':
+            elif (item['Type'] == 'Video'):
                 try:
                     item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate'])  + ' - Favorite: ' + str(item['UserData']['IsFavorite'])  + ' - ' + 'VideoID: ' + item['Id']
                 except (KeyError):
                     print('Error encounter: \n\n' + str(item))
                     exit(1)
                 print(':[KEEPING] - ' + item_details)
-            elif item['Type'] == 'Trailer':
+            elif (item['Type'] == 'Trailer'):
                 try:
                     item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate'])  + ' - Favorite: ' + str(item['UserData']['IsFavorite'])  + ' - ' + 'TrailerID: ' + item['Id']
                 except (KeyError):
                     print('Error encounter: \n\n' + str(item))
                     exit(1)
                 print(':[KEEPING] - ' + item_details)
-            else: #item['Type'] == 'Unknown':
+            else: #(item['Type'] == 'Unknown'):
                 try:
                     item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate'])  + ' - Favorite: ' + str(item['UserData']['IsFavorite'])  + ' - ' + item['Type'] + 'ID: ' +  item['Id']
                 except (KeyError):
                     print('Error encounter: \n\n' + str(item))
                     exit(1)
-                print(':[ERROR!!] - ' + item_details)
-                print(':[KEEPING] - ' + item_details)
+                print(':[KEEPING UNKNOWN MEDIA TYPE] - ' + item_details)
     print('-----------------------------------------------------------')
     return(deleteItems)
 
