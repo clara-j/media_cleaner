@@ -4,6 +4,7 @@ import urllib.request as request
 import json, urllib
 import hashlib
 import sys
+import os
 from dateutil.parser import parse
 from datetime import datetime,date,timedelta,timezone
 
@@ -13,18 +14,23 @@ from datetime import datetime,date,timedelta,timezone
 #auth_key=''
 #print('Hash:'+ cfg.admin_password_sha1)
 
+
 def get_url():
     return(input('Enter server ip or name: '))
+
 
 def get_port():
     return(input('Enter port (normally 8096): '))
 
+
 def get_admin_username():
     return(input('Enter admin username: '))
+
 
 def get_admin_password():
     password=input('Enter admin password (plain text password used to grab access token; password will not be stored): ')
     return(password)
+
 
 def generate_config():
     server=get_url()
@@ -48,36 +54,45 @@ def generate_config():
     config_file += "access_token='"+ auth_key +"'\n"
     config_file += "user_key='"+ user_key +"'\n"
     config_file += "DEBUG=0\n"
-#    config_file += "#----------------------------------------------------------#\n"
-#    config_file += "#-1=Disable deleting for media type (movie, episode, video, trailer)#\n"
-#    config_file += "# 0-365000=Delete media type once it has been watched x days ago#\n"
-#    config_file += "#100=default#\n"
+    #config_file += "#----------------------------------------------------------#\n"
+    #config_file += "#-1=Disable deleting for media type (movie, episode, video, trailer)#\n"
+    #config_file += "# 0-365000=Delete media type once it has been watched x days ago#\n"
+    #config_file += "#100=default#\n"
     config_file += "not_played_age_movie="+ not_played_age_movie +"\n"
     config_file += "not_played_age_episode="+ not_played_age_episode +"\n"
     config_file += "not_played_age_video="+ not_played_age_video +"\n"
     config_file += "not_played_age_trailer="+ not_played_age_trailer +"\n"
-#    config_file += "#----------------------------------------------------------#\n"
-#    config_file += "#----------------------------------------------------------#\n"
-#    config_file += "#0=Disable deleting ALL media types#\n"
-#    config_file += "#1=Enable deleteing ALL media types once past 'not_played_age_*' days ago#\n"
-#    config_file += "#0=default#\n"
+    #config_file += "#----------------------------------------------------------#\n"
+    #config_file += "#----------------------------------------------------------#\n"
+    #config_file += "#0=Disable deleting ALL media types#\n"
+    #config_file += "#1=Enable deleteing ALL media types once past 'not_played_age_*' days ago#\n"
+    #config_file += "#0=default#\n"
     config_file += "remove_files=0\n"
-#    config_file += "#----------------------------------------------------------#\n"
-#    config_file += "#----------------------------------------------------------#\n"
-#    config_file += "#0=Ok to delete favorite of media type once past not_played_age_* days ago#\n"
-#    config_file += "#1=Do no delete favorite of media type#\n"
-#    config_file += "#(1=default)#\n"
+    #config_file += "#----------------------------------------------------------#\n"
+    #config_file += "#----------------------------------------------------------#\n"
+    #config_file += "#0=Ok to delete favorite of media type once past not_played_age_* days ago#\n"
+    #config_file += "#1=Do no delete favorite of media type#\n"
+    #config_file += "#(1=default)#\n"
     config_file += "ignore_favorites_movie=1\n"
     config_file += "ignore_favorites_episode=1\n"
     config_file += "ignore_favorites_video=1\n"
     config_file += "ignore_favorites_trailer=1"
-#    config_file += "\n#----------------------------------------------------------#"
+    #config_file += "\n#----------------------------------------------------------#"
+
+    #Create config file next to the script even when cwd is not the same
+    cwd = os.getcwd()
+    script_dir = os.path.dirname(__file__)
+    os.chdir(script_dir)
 
     f = open("media_cleaner_config.py", "w")
     f.write(config_file)
     f.close()
+
+    os.chdir(cwd)
+
     print('\n\n-----------------------------------------------------------')
-    print('Config file is not setup to delete files; to enable file delete set remove_files=1')
+    print('Config file is not setup to delete media')
+    print('To delete media set remove_files=1')
     print('Config file contents:')
     print('-----------------------------------------------------------')
     print(config_file)
@@ -91,7 +106,7 @@ def delete_item(itemID):
     if not bool(cfg.remove_files):
         return
 
-    url=url=cfg.server_url + '/emby/Items/' + itemID + '?api_key='+ auth_key
+    url=url=cfg.server_url + '/emby/Items/' + itemID + '?api_key='+ cfg.access_token
     if bool(cfg.DEBUG):
         print(url)
     req = request.Request(url,method='DELETE')
@@ -138,7 +153,6 @@ def list_users(server_url, auth_key):
 
 
 def get_days_since_watched(date_last_played):
-
     #Get current time
     date_time_now = datetime.utcnow()
     #Keep the year, month, day, hour, minute, and second
@@ -147,7 +161,9 @@ def get_days_since_watched(date_last_played):
     s_date_time_delta = str(date_time_delta)
     days_since_watched = s_date_time_delta.split(' day')[0]
     if ':' in days_since_watched:
-        days_since_watched ='Watched <1 day ago'
+        days_since_watched = 'Watched <1 day ago'
+    elif days_since_watched == '1':
+        days_since_watched = 'Watched ' + days_since_watched + ' day ago'
     else:
         days_since_watched = 'Watched ' + days_since_watched + ' days ago'
     return(days_since_watched)
@@ -172,7 +188,6 @@ def get_items(server_url, user_key, auth_key):
             data = json.loads(source)
         else:
             print('An error occurred while attempting to retrieve data from the API.')
-
 
     #Go through all items and get ones not played in X days
     cut_off_date_movie=datetime.now(timezone.utc) - timedelta(cfg.not_played_age_movie)
@@ -280,7 +295,12 @@ def list_items(deleteItems):
     print ('\n')
     print('-----------------------------------------------------------')
     print('Summary Of Deleted Media:')
+    if not bool(cfg.remove_files):
+        print('* Trial Run          *')
+        print('* remove_files=0     *')
+        print('* No Media Deleted   *')
     print('-----------------------------------------------------------')
+
     if len(deleteItems) > 0:
         for item in deleteItems:
             if item['Type'] == 'Movie':
@@ -292,11 +312,12 @@ def list_items(deleteItems):
             elif item['Type'] == 'Trailer':
                 item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
             else: # item['Type'] == 'Unknown':
-                item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
+                pass
             delete_item(item['Id'])
             print('[DELETED] ' + item_details)
     else:
         print('[NO ITEMS TO DELETE]')
+
     print('-----------------------------------------------------------')
     print('\n')
     print('-----------------------------------------------------------')
@@ -368,6 +389,7 @@ try:
         if not hasattr(cfg, 'not_played_age_trailer'):
             print('not_played_age_trailer=100')
             setattr(cfg, 'not_played_age_trailer', 100)
+
         print('-----------------------------------------------------------')
         print ('\n')
 
