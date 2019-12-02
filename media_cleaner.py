@@ -313,6 +313,10 @@ try:
         not hasattr(cfg, 'ignore_favorites_episode') or
         not hasattr(cfg, 'ignore_favorites_video') or
         not hasattr(cfg, 'ignore_favorites_trailer') or
+        not hasattr(cfg, 'not_played_age_movie') or
+        not hasattr(cfg, 'not_played_age_episode') or
+        not hasattr(cfg, 'not_played_age_video') or
+        not hasattr(cfg, 'not_played_age_trailer') or
         not hasattr(cfg, 'access_token')
         ):
         if not hasattr(cfg, 'access_token'):
@@ -324,6 +328,7 @@ try:
             setattr(cfg, 'admin_username', username)
             password=get_admin_password()
             auth_key=get_auth_key(server_url, username, password)
+
         print('-----------------------------------------------------------')
         print('ATTENTION!!!')
         print('Old or incomplete config in use.')
@@ -334,8 +339,9 @@ try:
         print('Using default value of:')
         print('-----------------------------------------------------------')
 
-        print('access_token=\'' + str(auth_key) + '\'')
-        setattr(cfg, 'access_token', auth_key)
+        if not hasattr(cfg, 'access_token'):
+            print('access_token=\'' + str(auth_key) + '\'')
+            setattr(cfg, 'access_token', auth_key)
 
         if not hasattr(cfg, 'ignore_favorites_movie'):
             print('ignore_favorites_movie=1')
@@ -349,6 +355,19 @@ try:
         if not hasattr(cfg, 'ignore_favorites_trailer'):
             print('ignore_favorites_trailer=1')
             setattr(cfg, 'ignore_favorites_trailer', 1)
+
+        if not hasattr(cfg, 'not_played_age_movie'):
+            print('not_played_age_movie=100')
+            setattr(cfg, 'not_played_age_movie', 100)
+        if not hasattr(cfg, 'not_played_age_episode'):
+            print('not_played_age_episode=100')
+            setattr(cfg, 'not_played_age_episode', 100)
+        if not hasattr(cfg, 'not_played_age_video'):
+            print('not_played_age_video=100')
+            setattr(cfg, 'not_played_age_video', 100)
+        if not hasattr(cfg, 'not_played_age_trailer'):
+            print('not_played_age_trailer=100')
+            setattr(cfg, 'not_played_age_trailer', 100)
         print('-----------------------------------------------------------')
         print ('\n')
 
