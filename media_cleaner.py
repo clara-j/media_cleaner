@@ -108,6 +108,7 @@ def delete_item(itemID):
     if not bool(cfg.remove_files):
         return
 
+    #url=url=cfg.server_url + '/emby/Items/' + itemID + '?api_key='+ auth_key
     url=url=cfg.server_url + '/emby/Items/' + itemID + '?api_key='+ cfg.access_token
     if bool(cfg.DEBUG):
         print(url)
