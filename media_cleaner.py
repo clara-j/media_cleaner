@@ -29,6 +29,7 @@ def get_admin_username():
 
 def get_admin_password():
     password=input('Enter admin password (plain text password used to grab access token; password will not be stored): ')
+    #password=hashlib.sha1(password.encode()).hexdigest()
     return(password)
 
 
@@ -38,8 +39,8 @@ def generate_config():
     username=get_admin_username()
     password=get_admin_password()
 
-    server_url='http://'+ server +':'+ port
-    auth_key=get_auth_key(server_url,username, password)
+    server_url='http://' + server + ':' + port
+    auth_key=get_auth_key(server_url, username, password)
 
     user_key=list_users(server_url, auth_key)
 
@@ -51,6 +52,7 @@ def generate_config():
     config_file=''
     config_file += "server_url='http://"+ server +":"+ port +"'\n"
     config_file += "admin_username='"+ username +"'\n"
+    #config_file += "admin_password_sha1='"+ password +"'\n"
     config_file += "access_token='"+ auth_key +"'\n"
     config_file += "user_key='"+ user_key +"'\n"
     config_file += "DEBUG=0\n"
@@ -396,5 +398,7 @@ except (AttributeError, ModuleNotFoundError):
     generate_config()
     exit(0)
 
+#auth_key=get_auth_key(cfg.server_url, cfg.admin_username, cfg.admin_password_sha1)
+#deleteItems=get_items(cfg.server_url, cfg.user_key, auth_key)
 deleteItems=get_items(cfg.server_url, cfg.user_key, cfg.access_token)
 list_items(deleteItems)
