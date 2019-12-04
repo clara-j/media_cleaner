@@ -29,6 +29,7 @@ def get_admin_username():
 
 def get_admin_password():
     password=input('Enter admin password (plain text password used to grab access token; password will not be stored): ')
+    #password=input('Enter admin password (password will be hashed in config file): ')
     #password=hashlib.sha1(password.encode()).hexdigest()
     return(password)
 
@@ -131,6 +132,8 @@ def get_auth_key(server_url, username, password):
         if response.getcode() == 200:
             source = response.read()
             data = json.loads(source)
+            #if bool(cfg.DEBUG):
+                #print(data)
         else:
             print('An error occurred while attempting to retrieve data from the API.')
 
@@ -143,6 +146,8 @@ def list_users(server_url, auth_key):
         if response.getcode() == 200:
             source = response.read()
             data = json.loads(source)
+            #if bool(cfg.DEBUG):
+                #print(data)
         else:
             print('An error occurred while attempting to retrieve data from the API.')
     i=0
@@ -332,25 +337,36 @@ try:
     test=cfg.DEBUG
 
     if (
+        not hasattr(cfg, 'server_url') or
+        not hasattr(cfg, 'admin_username') or
+        #not hasattr(cfg, 'admin_password_sha1') or
+        not hasattr(cfg, 'access_token') or
+        not hasattr(cfg, 'user_key') or
         not hasattr(cfg, 'ignore_favorites_movie') or
         not hasattr(cfg, 'ignore_favorites_episode') or
         not hasattr(cfg, 'ignore_favorites_video') or
         not hasattr(cfg, 'ignore_favorites_trailer') or
+        not hasattr(cfg, 'remove_files') or
         not hasattr(cfg, 'not_played_age_movie') or
         not hasattr(cfg, 'not_played_age_episode') or
         not hasattr(cfg, 'not_played_age_video') or
-        not hasattr(cfg, 'not_played_age_trailer') or
-        not hasattr(cfg, 'access_token')
-        ):
-        if not hasattr(cfg, 'access_token'):
-            url=get_url()
-            port=get_port()
-            server_url='http://'+ url +':'+ port
-            setattr(cfg, 'server_url', server_url)
-            username=get_admin_username()
-            setattr(cfg, 'admin_username', username)
-            password=get_admin_password()
-            auth_key=get_auth_key(server_url, username, password)
+        not hasattr(cfg, 'not_played_age_trailer') #or
+       ):
+        if (
+            not hasattr(cfg, 'server_url') or
+            not hasattr(cfg, 'admin_username') or
+            #not hasattr(cfg, 'admin_password_sha1') or
+            not hasattr(cfg, 'access_token') or
+            not hasattr(cfg, 'user_key')
+           ):
+                url=get_url()
+                port=get_port()
+                server_url='http://'+ url +':'+ port
+                username=get_admin_username()
+                password=get_admin_password()
+                auth_key=get_auth_key(server_url, username, password)
+                if not hasattr(cfg, 'user_key'):
+                    user_key=list_users(server_url, auth_key)
 
         print('-----------------------------------------------------------')
         print('ATTENTION!!!')
@@ -362,9 +378,21 @@ try:
         print('Using default value of:')
         print('-----------------------------------------------------------')
 
+        if not hasattr(cfg, 'server_url'):
+            print('server_url=\'' + str(server_url) + '\'')
+            setattr(cfg, 'server_url', server_url)
+        if not hasattr(cfg, 'admin_username'):
+            print('admin_username=\'' + str(username) + '\'')
+            setattr(cfg, 'admin_username', username)
+        #if not hasattr(cfg, 'admin_password_sha1'):
+            #print('admin_password_sha1=\'' + str(password) + '\'')
+            #setattr(cfg, 'admin_password_sha1', password)
         if not hasattr(cfg, 'access_token'):
             print('access_token=\'' + str(auth_key) + '\'')
             setattr(cfg, 'access_token', auth_key)
+        if not hasattr(cfg, 'user_key'):
+            print('user_key=\'' + str(user_key) + '\'')
+            setattr(cfg, 'user_key', user_key)
 
         if not hasattr(cfg, 'ignore_favorites_movie'):
             print('ignore_favorites_movie=1')
@@ -378,6 +406,10 @@ try:
         if not hasattr(cfg, 'ignore_favorites_trailer'):
             print('ignore_favorites_trailer=1')
             setattr(cfg, 'ignore_favorites_trailer', 1)
+
+        if not hasattr(cfg, 'remove_files'):
+            print('remove_files=0')
+            setattr(cfg, 'remove_files', 0)
 
         if not hasattr(cfg, 'not_played_age_movie'):
             print('not_played_age_movie=100')
