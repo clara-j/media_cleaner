@@ -7,16 +7,20 @@ The first time you run the script it will attempt to create the config file for 
 filename: media_cleaner_config.py
 
 * server_url='http://server:8096' - Server url for Emby server
-* user_key='XXXXXXXXXXX'  - UserID of the user that script check watched status for
-* not_played_age=100  - How many days since last watched date
-* admin_username='UserName'  - Username for Admin user with access to delete files
-* admin_password_sha1='YYYYYYYYYYYYY'  - SHA1 hashed password value
-* remove_files=0  - 0 means trial run, no delete.  1 means remove files
-* video_action='delete' - Delete video type files like home video library category
-* movie_action='delete' - Delete movie type files
-* episode_action='delete' - Delete TV type file
-* DEBUG=1 - Display extra info to screen for debuging
-* ignore_favorites=1 - Ignore videos that have been marked as favorite
+* admin_username='UserName' - Username for Admin user with access to delete files
+* access_token='ZZZZZZZZZZZZZ' - Token used to verify admin user actions
+* user_key='YYYYYYYYYYYYY' - UserID of the user that script check watched status for
+* DEBUG=0 - 0 Do not display extra infor; 1 Display extra info for debuging
+* not_played_age_movie=100 - How many days to keep a watched movie before deleting; -1 do not delete media type
+* not_played_age_episode=100 - How many days to keep a watched episode before deleting; -1 do not delete media type
+* not_played_age_video=100 - How many days to keep a watched video before deleting; -1 do not delete media type
+* not_played_age_trailer=100 - How many days to keep a watched trailer before deleting; -1 do not delete media type
+* remove_files=0 - 0 for trial runs (aka media is not deleted);  1 to allow script to delete media
+* ignore_favorites_movie=1 - 1 Ignore movies that have been marked as favorite; 0 Delete movies marked as favorite
+* ignore_favorites_episode=1 - 1 Ignore episodes that have been marked as favorite; 0 Delete episodes marked as favorite
+* ignore_favorites_video=1 - 1 Ignore videos that have been marked as favorite; 0 Delete videos marked as favorite
+* ignore_favorites_trailer=1 - 1 Ignore trailers that have been marked as favorite; 0 Delete trailers marked as favorite
+
 
 # Usage
 Make media_cleaner.py executable and run ./media_cleaner.py.  If no conifg file is found it will prompt you to create one.  Once done you can run the script again to view files that will be deleted
