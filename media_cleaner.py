@@ -28,13 +28,52 @@ def jprint(rawjson):
     print(ezjson)
 
 
+def get_brand():
+    defaultbrand='emby'
+    print('0:emby\n1:jellyfin')
+    brand=input('Enter number for server branding (default ' + defaultbrand + '): ')
+    if (brand == ''):
+        return(defaultbrand)
+    elif (brand == '0'):
+        return(defaultbrand)
+    elif (brand == '1'):
+        return('jellyfin')
+    else:
+        print('Invalid choice. Default to emby.')
+        return(defaultbrand)
+
+
 def get_url():
-    return(input('Enter server ip or name: '))
+    defaulturl='localhost'
+    url=input('Enter server ip or name (default ' + defaulturl + '): ')
+    if (url == ''):
+        return(defaulturl)
+    else:
+        return(url)
 
 
 def get_port():
-    return(input('Enter port (normally 8096): '))
+    defaultport='8096'
+    print('If you have not explicity changed this option, press enter for default.')
+    print('Space for no port.')
+    port=input('Enter port (default ' + defaultport + '): ')
+    if (port == ''):
+        return(defaultport)
+    elif (port == ' '):
+        return('')
+    else:
+        return(port)
 
+def get_base():
+    defaultbase='emby'
+    #print('If you are using emby press enter for default.')
+    print('If you have not explicity changed this option in jellyfin, press enter for default.')
+    print('For example: http://example.com/<baseurl>')
+    base=input('Enter base url (default ' + defaultbase + '): ')
+    if (base == ''):
+        return(defaultbase)
+    else:
+        return(base)
 
 def get_admin_username():
     return(input('Enter admin username: '))
@@ -52,16 +91,27 @@ def get_admin_password_sha1(password):
 
 
 def generate_config():
+    print('-----------------------------------------------------------')
+    server_brand=get_brand()
+
     server=get_url()
     port=get_port()
+    if (server_brand == 'jellyfin'):
+        server_base=get_base()
+    else:
+        server_base='emby'
+    if (len(port)):
+        server_url='http://' + server + ':' + port + '/' + server_base
+    else:
+        server_url='http://' + server + '/' + server_base
+
     username=get_admin_username()
     password=get_admin_password()
     password_sha1=get_admin_password_sha1(password)
 
-    server_url='http://' + server + ':' + port
     auth_key=get_auth_key(server_url, username, password, password_sha1)
-
     user_key=list_users(server_url, auth_key)
+    print('-----------------------------------------------------------')
 
     not_played_age_movie="100"
     not_played_age_episode="100"
@@ -69,7 +119,8 @@ def generate_config():
     not_played_age_trailer="100"
 
     config_file=''
-    config_file += "server_url='http://"+ server +":"+ port +"'\n"
+    config_file += "server_brand='"+ server_brand +"'\n"
+    config_file += "server_url='"+ server_url +"'\n"
     config_file += "admin_username='"+ username +"'\n"
     config_file += "admin_password_sha1='"+ password_sha1 +"'\n"
     config_file += "access_token='"+ auth_key +"'\n"
@@ -83,10 +134,10 @@ def generate_config():
     config_file += "not_played_age_episode="+ not_played_age_episode +"\n"
     config_file += "not_played_age_video="+ not_played_age_video +"\n"
     config_file += "not_played_age_trailer="+ not_played_age_trailer +"\n"
-#    config_file += "not_played_age_audio="+ not_played_age_audio +"\n"
-#    config_file += "not_played_age_season_folder="+ not_played_age_season_folder +"\n"
-#    config_file += "not_played_age_tvchannel="+ not_played_age_tvchannel +"\n"
-#    config_file += "not_played_age_program="+ not_played_age_program +"\n"
+    #config_file += "not_played_age_audio="+ not_played_age_audio +"\n"
+    #config_file += "not_played_age_season_folder="+ not_played_age_season_folder +"\n"
+    #config_file += "not_played_age_tvchannel="+ not_played_age_tvchannel +"\n"
+    #config_file += "not_played_age_program="+ not_played_age_program +"\n"
     #config_file += "#----------------------------------------------------------#\n"
     #config_file += "#----------------------------------------------------------#\n"
     #config_file += "#0=Disable deleting ALL media types#\n"
@@ -102,10 +153,10 @@ def generate_config():
     config_file += "ignore_favorites_episode=1\n"
     config_file += "ignore_favorites_video=1\n"
     config_file += "ignore_favorites_trailer=1"
-#    config_file += "ignore_favorites_audio=1"
-#    config_file += "ignore_favorites_season_folder=1"
-#    config_file += "ignore_favorites_tvchannel=1"
-#    config_file += "ignore_favorites_program=1"
+    #config_file += "ignore_favorites_audio=1"
+    #config_file += "ignore_favorites_season_folder=1"
+    #config_file += "ignore_favorites_tvchannel=1"
+    #config_file += "ignore_favorites_program=1"
     #config_file += "\n#----------------------------------------------------------#"
 
     #Create config file next to the script even when cwd is not the same
@@ -133,8 +184,7 @@ def generate_config():
 
 #Delete items
 def delete_item(itemID):
-    #url=url=cfg.server_url + '/emby/Items/' + itemID + '?api_key='+ auth_key
-    url=url=cfg.server_url + '/emby/Items/' + itemID + '?api_key='+ cfg.access_token
+    url=url=cfg.server_url +'/Items/' + itemID + '?api_key='+ cfg.access_token
     req = request.Request(url,method='DELETE')
     if bool(cfg.DEBUG):
         print(itemID)
@@ -149,20 +199,20 @@ def delete_item(itemID):
         return
 
 
-def get_auth_key(server_url, username, password, sha1_password):
+def get_auth_key(server_url, username, password, password_sha1):
     #Get Auth Token for admin account
-    #values = {'Username' : username, 'Password' : password_sha1}
-    values = {'Username' : username, 'Password' : sha1_password, 'Pw' : password}
+    values = {'Username' : username, 'Password' : password_sha1, 'Pw' : password}
     DATA = urllib.parse.urlencode(values)
     DATA = DATA.encode('ascii')
 
-    headers = {'X-Emby-Authorization' : 'Emby UserId="'+ username  +'", Client="media_cleaner", Device="media_cleaner", DeviceId="media_cleaner", Version="0.1", Token=""'}
+    headers = {'X-Emby-Authorization' : 'Emby UserId="'+ username  +'", Client="media_cleaner", Device="media_cleaner", DeviceId="media_cleaner", Version="0.2", Token=""'}
 
-    req = request.Request(url=server_url + '/emby/Users/AuthenticateByName', data=DATA,method='POST', headers=headers)
+    req = request.Request(url=server_url +'/Users/AuthenticateByName', data=DATA,method='POST', headers=headers)
 
     with request.urlopen(req) as response:
         if response.getcode() == 200:
             source = response.read()
+            #print(source)
             data = json.loads(source)
 
             #DEBUG
@@ -175,7 +225,7 @@ def get_auth_key(server_url, username, password, sha1_password):
 
 def list_users(server_url, auth_key):
     #Get all users - DEBUG
-    with request.urlopen(server_url +'/emby/Users?api_key=' + auth_key) as response:
+    with request.urlopen(server_url +'/Users?api_key=' + auth_key) as response:
         if response.getcode() == 200:
             source = response.read()
             data = json.loads(source)
@@ -197,15 +247,13 @@ def list_users(server_url, auth_key):
 def get_days_since_watched(date_last_played):
     #Get current time
     date_time_now = datetime.utcnow()
-    #Keep the year, month, day, hour, minute, and second
+
+    #Keep the year, month, day, hour, minute, and seconds
+      #split date_last_played after seconds
     try:
-        date_time_last_watched = datetime.strptime(date_last_played, '%Y-%m-%dT%H:%M:%S.0000000+00:00')
+        split_date_micro_tz = date_last_played.split(".")
+        date_time_last_watched = datetime.strptime(date_last_played, '%Y-%m-%dT%H:%M:%S.' + split_date_micro_tz[1])
     except ValueError:
-        try:
-            date_time_last_watched = datetime.strptime(date_last_played, '%Y-%m-%dT%H:%M:%S.0000000Z')
-        except Exception:
-            date_time_last_watched = 'unknown date time format'
-    except:
         date_time_last_watched = 'unknown date time format'
 
     if bool(cfg.DEBUG):
@@ -249,7 +297,7 @@ def get_items(server_url, user_key, auth_key):
     print('Get List Of Watched Media')
     print('-----------------------------------------------------------')
 
-    url=server_url + '/emby/Users/' + user_key  + '/Items?Recursive=true&IsPlayed=true&api_key=' + auth_key
+    url=server_url + '/Users/' + user_key  + '/Items?Recursive=true&IsPlayed=true&api_key=' + auth_key
 
     if bool(cfg.DEBUG):
         print(url)
@@ -278,6 +326,7 @@ def get_items(server_url, user_key, auth_key):
     cut_off_date_trailer=datetime.now(timezone.utc) - timedelta(cfg.not_played_age_trailer)
     deleteItems=[]
 
+    #Determine if media item is to be deleted or kept
     for item in data['Items']:
         if (item['Type'] == 'Movie'):
             if (
@@ -387,7 +436,6 @@ def get_items(server_url, user_key, auth_key):
 
 def list_delete_items(deleteItems):
     #List items to be deleted
-    print ('\n')
     print('-----------------------------------------------------------')
     print('Summary Of Deleted Media:')
     if not bool(cfg.remove_files):
@@ -430,6 +478,7 @@ try:
     test=cfg.DEBUG
 
     if (
+        not hasattr(cfg, 'server_brand') or
         not hasattr(cfg, 'server_url') or
         not hasattr(cfg, 'admin_username') or
         not hasattr(cfg, 'admin_password_sha1') or
@@ -446,32 +495,64 @@ try:
         not hasattr(cfg, 'not_played_age_trailer') #or
        ):
         if (
+            not hasattr(cfg, 'server_brand') or
             not hasattr(cfg, 'server_url') or
             not hasattr(cfg, 'admin_username') or
             not hasattr(cfg, 'admin_password_sha1') or
             not hasattr(cfg, 'access_token') or
-            not hasattr(cfg, 'user_key')
+            not hasattr(cfg, 'user_key') #or
            ):
-                url=get_url()
-                port=get_port()
-                server_url='http://'+ url +':'+ port
-                username=get_admin_username()
-                password=get_admin_password()
-                password_sha1=get_admin_password_sha1(password)
-                auth_key=get_auth_key(server_url, username, password, password_sha1)
-                if not hasattr(cfg, 'user_key'):
-                    user_key=list_users(server_url, auth_key)
 
+            if hasattr(cfg, 'server_brand'):
+                delattr(cfg, 'server_brand')
+            if hasattr(cfg, 'server_url'):
+                delattr(cfg, 'server_url')
+            if hasattr(cfg, 'admin_username'):
+                delattr(cfg, 'admin_username')
+            if hasattr(cfg, 'admin_password_sha1'):
+                delattr(cfg, 'admin_password_sha1')
+            if hasattr(cfg, 'access_token'):
+                delattr(cfg, 'access_token')
+            if hasattr(cfg, 'user_key'):
+                delattr(cfg, 'user_key')
+
+            print('-----------------------------------------------------------')
+            server_brand=get_brand()
+
+            server=get_url()
+            port=get_port()
+            if (server_brand == 'jellyfin'):
+                server_base=get_base()
+            else:
+                server_base='emby'
+            if (len(port)):
+                server_url='http://' + server + ':' + port + '/' + server_base
+            else:
+                server_url='http://' + server + '/' + server_base
+
+            username=get_admin_username()
+            password=get_admin_password()
+            password_sha1=get_admin_password_sha1(password)
+
+            auth_key=get_auth_key(server_url, username, password, password_sha1)
+            user_key=list_users(server_url, auth_key)
+            print('-----------------------------------------------------------')
+
+        print('\n')
         print('-----------------------------------------------------------')
         print('ATTENTION!!!')
         print('Old or incomplete config in use.')
-        print('1) Add the below config values(s) to media_cleaner_config.py.')
+        print('1) Delete media_cleaner_config.py and run this again to create a new config.')
         print('Or')
-        print('2) Delete media_cleaner_config.py and run this again to create an updated config.')
+        print('2) Delete DEBUG from media_cleaner_config.py and run this again to create a new config.')
         print('-----------------------------------------------------------')
-        print('Using default config value(s) of:')
+        print('Matching value(s) in media_cleaner_config.py ignored.')
+        print('Using the below config value(s) for this run:')
         print('-----------------------------------------------------------')
 
+        if not hasattr(cfg, 'server_brand'):
+            print('server_brand=\'' + str(server_brand) + '\'')
+            setattr(cfg, 'server_brand', server_brand)
         if not hasattr(cfg, 'server_url'):
             print('server_url=\'' + str(server_url) + '\'')
             setattr(cfg, 'server_url', server_url)
@@ -525,7 +606,5 @@ except (AttributeError, ModuleNotFoundError):
     generate_config()
     exit(0)
 
-#auth_key=get_auth_key(cfg.server_url, cfg.admin_username, cfg.admin_password_sha1)
-#deleteItems=get_items(cfg.server_url, cfg.user_key, auth_key)
 deleteItems=get_items(cfg.server_url, cfg.user_key, cfg.access_token)
 list_delete_items(deleteItems)
