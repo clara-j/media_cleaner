@@ -44,12 +44,18 @@ def get_brand():
 
 
 def get_url():
-    defaulturl='localhost'
+    defaulturl='http://localhost'
     url=input('Enter server ip or name (default ' + defaulturl + '): ')
     if (url == ''):
         return(defaulturl)
     else:
-        return(url)
+        if (url.find('://',3,7) >= 0):
+            return(url)
+        else:
+           #print('No http:// or https:// entered.')
+           url='http://' + url
+           print('Assuming server ip or name is: ' + url)
+           return(url)
 
 
 def get_port():
@@ -64,23 +70,31 @@ def get_port():
     else:
         return(port)
 
-def get_base():
+def get_base(brand):
     defaultbase='emby'
     #print('If you are using emby press enter for default.')
-    print('If you have not explicity changed this option in jellyfin, press enter for default.')
-    print('For example: http://example.com/<baseurl>')
-    base=input('Enter base url (default ' + defaultbase + '): ')
-    if (base == ''):
+    if (brand == defaultbase):
+        print('Using "/' + defaultbase + '" as base url')
         return(defaultbase)
     else:
-        return(base)
+        print('If you have not explicity changed this option in jellyfin, press enter for default.')
+        print('For example: http://example.com/<baseurl>')
+        base=input('Enter base url (default /' + defaultbase + '): ')
+        if (base == ''):
+            return(defaultbase)
+        else:
+            if (base.find('/',0,1) == 0):
+                return(base[1:len(base)])
+            else:
+                return(base)
 
 def get_admin_username():
     return(input('Enter admin username: '))
 
 
 def get_admin_password():
-    password=input('Enter admin password (plain text password used to grab access token; password will not be stored): ')
+    print('Plain text password used to grab access token; password will not be stored.')
+    password=input('Enter admin password: ')
     return(password)
 
 
@@ -94,20 +108,23 @@ def generate_config():
     print('-----------------------------------------------------------')
     server_brand=get_brand()
 
+    print('-----------------------------------------------------------')
     server=get_url()
+    print('-----------------------------------------------------------')
     port=get_port()
-    if (server_brand == 'jellyfin'):
-        server_base=get_base()
-    else:
-        server_base='emby'
+    print('-----------------------------------------------------------')
+    server_base=get_base(server_brand)
     if (len(port)):
-        server_url='http://' + server + ':' + port + '/' + server_base
+        server_url=server + ':' + port + '/' + server_base
     else:
-        server_url='http://' + server + '/' + server_base
+        server_url=server + '/' + server_base
+    print('-----------------------------------------------------------')
 
     username=get_admin_username()
+    print('-----------------------------------------------------------')
     password=get_admin_password()
     password_sha1=get_admin_password_sha1(password)
+    print('-----------------------------------------------------------')
 
     auth_key=get_auth_key(server_url, username, password, password_sha1)
     user_key=list_users(server_url, auth_key)
@@ -212,7 +229,6 @@ def get_auth_key(server_url, username, password, password_sha1):
     with request.urlopen(req) as response:
         if response.getcode() == 200:
             source = response.read()
-            #print(source)
             data = json.loads(source)
 
             #DEBUG
@@ -234,13 +250,29 @@ def list_users(server_url, auth_key):
             #jprint(data)
         else:
             print('An error occurred while attempting to retrieve data from the API.')
-    i=0
-    for user in data:
-        print(str(i) +':'+ user['Name'] + ' - ' + user['Id'])
-        i += 1
 
-    user_number=input('Enter number for user to track: ')
-    userID=data[int(user_number)]['Id']
+    valid_user=False
+    while (valid_user == False):
+        i=0
+        for user in data:
+            print(str(i) +':'+ user['Name'] + ' - ' + user['Id'])
+            i += 1
+
+        user_number=input('Enter number for user to track: ')
+        try:
+            user_number_float=float(user_number)
+            if ((user_number_float % 1) == 0):
+                user_number_int=int(user_number_float)
+                if ((int(user_number_int) >= 0) and (int(user_number_int) < i)):
+                    valid_user=True
+                else:
+                    print('\nInvalid number. Try again.\n')
+            else:
+                print('\nInvalid number. Try again.\n')
+        except:
+            print('\nInvalid number. Try again.\n')
+
+    userID=data[int(user_number_int)]['Id']
     return(userID)
 
 
@@ -253,7 +285,7 @@ def get_days_since_watched(date_last_played):
     try:
         split_date_micro_tz = date_last_played.split(".")
         date_time_last_watched = datetime.strptime(date_last_played, '%Y-%m-%dT%H:%M:%S.' + split_date_micro_tz[1])
-    except ValueError:
+    except (ValueError):
         date_time_last_watched = 'unknown date time format'
 
     if bool(cfg.DEBUG):
@@ -519,20 +551,23 @@ try:
             print('-----------------------------------------------------------')
             server_brand=get_brand()
 
+            print('-----------------------------------------------------------')
             server=get_url()
+            print('-----------------------------------------------------------')
             port=get_port()
-            if (server_brand == 'jellyfin'):
-                server_base=get_base()
-            else:
-                server_base='emby'
+            print('-----------------------------------------------------------')
+            server_base=get_base(server_brand)
             if (len(port)):
-                server_url='http://' + server + ':' + port + '/' + server_base
+                server_url=server + ':' + port + '/' + server_base
             else:
-                server_url='http://' + server + '/' + server_base
+                server_url=server + '/' + server_base
+            print('-----------------------------------------------------------')
 
             username=get_admin_username()
+            print('-----------------------------------------------------------')
             password=get_admin_password()
             password_sha1=get_admin_password_sha1(password)
+            print('-----------------------------------------------------------')
 
             auth_key=get_auth_key(server_url, username, password, password_sha1)
             user_key=list_users(server_url, auth_key)
