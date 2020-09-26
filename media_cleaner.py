@@ -462,6 +462,9 @@ def get_items(server_url, user_key, auth_key):
                     print('\nError encountered - Keep Unknown Media Type: \n' + str(item))
             print(':[KEEPING UNKNOWN MEDIA TYPE] - ' + item_details)
 
+    if len(deleteItems) <= 0:
+        print('[NO WATCHED ITEMS]')
+
     print('-----------------------------------------------------------')
     return(deleteItems)
 
