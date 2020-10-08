@@ -421,16 +421,16 @@ def get_items(server_url, user_key, auth_key):
         elif (item['Type'] == 'Episode'):
             #Check if episode's favorite value already exists in dictionary
             if not item['Id'] in isfav['episode']:
-                #Determine if this episode is marked as a favortie
+                #Determine if this episode is marked as a favorite
                 isfav['episode'][item['Id']] = item['UserData']['IsFavorite']
             #Check if season's favorite value already exists in dictionary
             if not item['SeasonId'] in isfav['season']:
                 #Determine if the season is marked as a favorite
-                isfav['season'][item['SeasonId']] = get_isfav_season_series(server_url,user_key,item['SeasonId'],auth_key)
+                isfav['season'][item['SeasonId']] = get_isfav_season_series(server_url, user_key, item['SeasonId'], auth_key)
             #Check if series' favorite value already exists in dictionary
             if not item['SeriesId'] in isfav['series']:
                 #Determine if the series is marked as a favorite
-                isfav['series'][item['SeriesId']] = get_isfav_season_series(server_url,user_key,item['SeriesId'],auth_key)
+                isfav['series'][item['SeriesId']] = get_isfav_season_series(server_url, user_key, item['SeriesId'], auth_key)
             if bool(cfg.DEBUG):
                 #DEBUG
                 print('Episode is favorite: ' + str(isfav['episode'][item['Id']]))
