@@ -242,7 +242,7 @@ def get_auth_key(server_url, username, password, password_sha1):
 
 
 def list_users(server_url, auth_key):
-    #Get all users 
+    #Get all users
     with request.urlopen(server_url +'/Users?api_key=' + auth_key) as response:
         if response.getcode() == 200:
             source = response.read()
@@ -348,6 +348,40 @@ def get_isfav_season_series(server_url, user_key, itemId, auth_key):
     return(isfav_data['UserData']['IsFavorite'])
 
 
+def get_isfav(isfav, item, server_url, user_key, auth_key):
+    #Check if episode's favorite value already exists in dictionary
+    if not item['Id'] in isfav['episode']:
+        #Determine if this episode is marked as a favorite
+        isfav['episode'][item['Id']] = item['UserData']['IsFavorite']
+    #Check if season's favorite value already exists in dictionary
+    if not item['SeasonId'] in isfav['season']:
+        #Determine if the season is marked as a favorite
+        isfav['season'][item['SeasonId']] = get_isfav_season_series(server_url, user_key, item['SeasonId'], auth_key)
+    #Check if series' favorite value already exists in dictionary
+    if not item['SeriesId'] in isfav['series']:
+        #Determine if the series is marked as a favorite
+        isfav['series'][item['SeriesId']] = get_isfav_season_series(server_url, user_key, item['SeriesId'], auth_key)
+    if bool(cfg.DEBUG):
+        #DEBUG
+        print('Episode is favorite: ' + str(isfav['episode'][item['Id']]))
+        print(' Season is favorite: ' + str(isfav['season'][item['SeasonId']]))
+        print(' Series is favorite: ' + str(isfav['series'][item['SeriesId']]))
+
+    #Check if episode, season, or series is a favorite
+    if (
+       (isfav['episode'][item['Id']]) or
+       (isfav['season'][item['SeasonId']]) or
+       (isfav['series'][item['SeriesId']]) #or
+       ):
+        #Either the episode, season, or series is set as a favorite
+        itemIsFav=True
+    else:
+        #Neither the episode, season, or series is set as a favorite
+        itemIsFav=False
+
+    return(itemIsFav)
+
+
 def get_items(server_url, user_key, auth_key):
     #Get list of all played items
     print('-----------------------------------------------------------')
@@ -419,36 +453,8 @@ def get_items(server_url, user_key, auth_key):
                         print('\nError encountered - Keep Movie: \n' + str(item))
                 print(':[KEEPING] - ' + item_details)
         elif (item['Type'] == 'Episode'):
-            #Check if episode's favorite value already exists in dictionary
-            if not item['Id'] in isfav['episode']:
-                #Determine if this episode is marked as a favorite
-                isfav['episode'][item['Id']] = item['UserData']['IsFavorite']
-            #Check if season's favorite value already exists in dictionary
-            if not item['SeasonId'] in isfav['season']:
-                #Determine if the season is marked as a favorite
-                isfav['season'][item['SeasonId']] = get_isfav_season_series(server_url, user_key, item['SeasonId'], auth_key)
-            #Check if series' favorite value already exists in dictionary
-            if not item['SeriesId'] in isfav['series']:
-                #Determine if the series is marked as a favorite
-                isfav['series'][item['SeriesId']] = get_isfav_season_series(server_url, user_key, item['SeriesId'], auth_key)
-            if bool(cfg.DEBUG):
-                #DEBUG
-                print('Episode is favorite: ' + str(isfav['episode'][item['Id']]))
-                print(' Season is favorite: ' + str(isfav['season'][item['SeasonId']]))
-                print(' Series is favorite: ' + str(isfav['series'][item['SeriesId']]))
-
-            #Check if episode, season, or series is a favorite
-            if (
-               (isfav['episode'][item['Id']]) or
-               (isfav['season'][item['SeasonId']]) or
-               (isfav['series'][item['SeriesId']]) #or
-               ):
-                #Either the episode, season, or series is set as a favorite
-                itemIsFav=True
-            else:
-                #Neither the episode, season, or series is set as a favorite
-                itemIsFav=False
-
+            #Get if episode, season, or series is set as favorite
+            itemIsFav=get_isfav(isfav, item, server_url, user_key, auth_key)
             if (
                (cfg.not_played_age_episode >= 0) and
                (item['UserData']['PlayCount'] >= 1) and
