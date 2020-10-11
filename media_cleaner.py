@@ -336,7 +336,7 @@ def get_isfav_season_series(server_url, user_key, itemId, auth_key):
                 cwd = os.getcwd()
                 script_dir = os.path.dirname(__file__)
                 os.chdir(script_dir)
-                f = open("media_cleaner.debug", "w")
+                f = open("media_cleaner.debug", "a")
                 f.write(retjprint(isfav_data))
                 f.close()
                 os.chdir(cwd)
@@ -393,7 +393,7 @@ def get_items(server_url, user_key, auth_key):
     print('Get List Of Watched Media')
     print('-----------------------------------------------------------')
 
-    url=server_url + '/Users/' + user_key  + '/Items?Recursive=true&IsPlayed=true&api_key=' + auth_key
+    url=server_url + '/Users/' + user_key  + '/Items?Recursive=true&IsPlayed=true&SortBy=Type,SeriesName,ParentIndexNumber,IndexNumber,Name&SortOrder=Ascending&api_key=' + auth_key
 
     if bool(cfg.DEBUG):
         #DEBUG
