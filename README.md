@@ -7,7 +7,7 @@ The first time you run the script it will attempt to create the config file for 
 filename: media_cleaner_config.py
 
 * server_brand=0-emby or 1-jellyfin
-* server_url='http://server:8096/emby' - Server name or ip address
+* server_url='http://localhost:8096/emby' - Server name or ip address
 * admin_username='UserName' - Username for Admin user with access to delete files
 * access_token='ZZZZZZZZZZZZZ' - Token used to verify admin user actions
 * user_key='YYYYYYYYYYYYY' - UserID of the user that script check watched status for
