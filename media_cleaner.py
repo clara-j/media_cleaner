@@ -93,7 +93,7 @@ def get_admin_username():
 
 
 def get_admin_password():
-    print('Plain text password used to grab access token; password will not be stored.')
+    print('Plain text password used to grab access token; hashed password stored in config file.')
     password=input('Enter admin password: ')
     return(password)
 

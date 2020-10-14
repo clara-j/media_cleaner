@@ -9,6 +9,7 @@ filename: media_cleaner_config.py
 * server_brand=0-emby or 1-jellyfin
 * server_url='http://localhost:8096/emby' - Server name or ip address
 * admin_username='UserName' - Username for Admin user with access to delete files
+* admin_password='Password' - Password for Admin user with access to delete files (hashed password stored)
 * access_token='ZZZZZZZZZZZZZ' - Token used to verify admin user actions
 * user_key='YYYYYYYYYYYYY' - UserID of the user that script check watched status for
 * DEBUG=0 - 0 Do not display debug info; 1 Display debug info
