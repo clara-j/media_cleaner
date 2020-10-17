@@ -11,7 +11,7 @@ filename: media_cleaner_config.py
 * admin_username='UserName' - Username for Admin user with access to delete files
 * admin_password='Password' - Password for Admin user with access to delete files (hashed password stored)
 * access_token='ZZZZZZZZZZZZZ' - Token used to verify admin user actions
-* user_key='YYYYYYYYYYYYY' - UserID of the user that script check watched status for
+* user_key='YYYYYYYYYYYYY' - UserID of the user that script checks watched status for
 * DEBUG=0 - 0 Do not display debug info; 1 Display debug info
 * not_played_age_movie=100 - How many days to keep a watched movie before deleting; -1 do not delete media type
 * not_played_age_episode=100 - How many days to keep a watched episode before deleting; -1 do not delete media type
