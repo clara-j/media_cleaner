@@ -35,11 +35,11 @@ Make media_cleaner.py executable and run ./media_cleaner.py.  If no conifg file 
 * You may get the below python error if the python-dateutil module is not installed
    - ModuleNotFoundError: No module named 'dateutil' python-dateutil
 * For Ubuntu/Linux Mint type systems you can install the python-dateutil module with the following commands:
-   $ sudo apt-get update
-   $ sudo apt-get upgrade -y
-   $ sudo apt-get install python3-pip -y
-   $ sudo pip3 install -U pip
-   $ sudo pip3 install python-dateutil
+   - $ sudo apt-get update
+   - $ sudo apt-get upgrade -y
+   - $ sudo apt-get install python3-pip -y
+   - $ sudo pip3 install -U pip
+   - $ sudo pip3 install python-dateutil
 * For other operating systems
    - tbd or Google
 
