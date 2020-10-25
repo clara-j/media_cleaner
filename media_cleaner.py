@@ -258,7 +258,6 @@ def get_auth_key(server_url, username, password, password_sha1):
     return(data['AccessToken'])
 
 
-
 def list_users(server_url, auth_key):
     #Get all users
     with request.urlopen(server_url +'/Users?api_key=' + auth_key) as response:
