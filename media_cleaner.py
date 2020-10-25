@@ -60,15 +60,32 @@ def get_url():
 
 def get_port():
     defaultport='8096'
-    print('If you have not explicity changed this option, press enter for default.')
-    print('Space for no port.')
-    port=input('Enter port (default ' + defaultport + '): ')
-    if (port == ''):
-        return(defaultport)
-    elif (port == ' '):
-        return('')
-    else:
-        return(port)
+    valid_port=False
+    while (valid_port == False):
+        print('If you have not explicity changed this option, press enter for default.')
+        print('Space for no port.')
+        port=input('Enter port (default ' + defaultport + '): ')
+        if (port == ''):
+            valid_port=True
+            return(defaultport)
+        elif (port == ' '):
+            valid_port=True
+            return('')
+        else:
+            try:
+                port_float=float(port)
+                if ((port_float % 1) == 0):
+                    port_int=int(port_float)
+                    if ((int(port_int) >= 1) and (int(port_int) <= 65535)):
+                        valid_port=True
+                        return(str(port_int))
+                    else:
+                        print('\nInvalid port. Try again.\n')
+                else:
+                    print('\nInvalid port. Try again.\n')
+            except:
+                print('\nInvalid port. Try again.\n')
+
 
 def get_base(brand):
     defaultbase='emby'
@@ -241,6 +258,7 @@ def get_auth_key(server_url, username, password, password_sha1):
     return(data['AccessToken'])
 
 
+
 def list_users(server_url, auth_key):
     #Get all users
     with request.urlopen(server_url +'/Users?api_key=' + auth_key) as response:
@@ -274,7 +292,7 @@ def list_users(server_url, auth_key):
         except:
             print('\nInvalid number. Try again.\n')
 
-    userID=data[int(user_number_int)]['Id']
+    userID=data[user_number_int]['Id']
     return(userID)
 
 
@@ -390,7 +408,7 @@ def get_items(server_url, user_key, auth_key):
     print('-----------------------------------------------------------')
     print('\n')
     print('-----------------------------------------------------------')
-    print('Get List Of Watched Media')
+    print('Get List Of Watched Media:')
     print('-----------------------------------------------------------')
 
     url=server_url + '/Users/' + user_key  + '/Items?Recursive=true&IsPlayed=true&SortBy=Type,SeriesName,ParentIndexNumber,IndexNumber,Name&SortOrder=Ascending&api_key=' + auth_key
