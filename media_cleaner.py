@@ -28,6 +28,7 @@ def jprint(rawjson):
     print(ezjson)
 
 
+#emby or jellyfin?
 def get_brand():
     defaultbrand='emby'
     print('0:emby\n1:jellyfin')
@@ -43,6 +44,7 @@ def get_brand():
         return(defaultbrand)
 
 
+#ip address?
 def get_url():
     defaulturl='http://localhost'
     url=input('Enter server ip or name (default ' + defaulturl + '): ')
@@ -58,18 +60,37 @@ def get_url():
            return(url)
 
 
+#http or https port?
 def get_port():
     defaultport='8096'
-    print('If you have not explicity changed this option, press enter for default.')
-    print('Space for no port.')
-    port=input('Enter port (default ' + defaultport + '): ')
-    if (port == ''):
-        return(defaultport)
-    elif (port == ' '):
-        return('')
-    else:
-        return(port)
+    valid_port=False
+    while (valid_port == False):
+        print('If you have not explicity changed this option, press enter for default.')
+        print('Space for no port.')
+        port=input('Enter port (default ' + defaultport + '): ')
+        if (port == ''):
+            valid_port=True
+            return(defaultport)
+        elif (port == ' '):
+            valid_port=True
+            return('')
+        else:
+            try:
+                port_float=float(port)
+                if ((port_float % 1) == 0):
+                    port_int=int(port_float)
+                    if ((int(port_int) >= 1) and (int(port_int) <= 65535)):
+                        valid_port=True
+                        return(str(port_int))
+                    else:
+                        print('\nInvalid port. Try again.\n')
+                else:
+                    print('\nInvalid port. Try again.\n')
+            except:
+                print('\nInvalid port. Try again.\n')
 
+
+#base url?
 def get_base(brand):
     defaultbase='emby'
     #print('If you are using emby press enter for default.')
@@ -88,22 +109,27 @@ def get_base(brand):
             else:
                 return(base)
 
+
+#admin username?
 def get_admin_username():
     return(input('Enter admin username: '))
 
 
+#admin password?
 def get_admin_password():
     print('Plain text password used to grab access token; hashed password stored in config file.')
     password=input('Enter admin password: ')
     return(password)
 
 
+#hash admin password
 def get_admin_password_sha1(password):
     #password_sha1=password #input('Enter admin password (password will be hashed in config file): ')
     password_sha1=hashlib.sha1(password.encode()).hexdigest()
     return(password_sha1)
 
 
+#get user input needed to build the media_cleaner_config.py file
 def generate_config():
     print('-----------------------------------------------------------')
     server_brand=get_brand()
@@ -180,12 +206,14 @@ def generate_config():
     #Create config file next to the script even when cwd is not the same
     cwd = os.getcwd()
     script_dir = os.path.dirname(__file__)
+    if (script_dir == ''):
+        #script run from cwd
+        #set script_dir to '.' (aka this directory) to prevent error when attempting to change to '' (aka a blank directory)
+        script_dir='.'
     os.chdir(script_dir)
-
     f = open("media_cleaner_config.py", "w")
     f.write(config_file)
     f.close()
-
     os.chdir(cwd)
 
     print('\n\n-----------------------------------------------------------')
@@ -200,7 +228,7 @@ def generate_config():
     print('-----------------------------------------------------------')
 
 
-#Delete items
+#api call to delete items
 def delete_item(itemID):
     url=url=cfg.server_url +'/Items/' + itemID + '?api_key='+ cfg.access_token
     req = request.Request(url,method='DELETE')
@@ -218,15 +246,19 @@ def delete_item(itemID):
         return
 
 
+#api call to get admin account authentication token
 def get_auth_key(server_url, username, password, password_sha1):
-    #Get Auth Token for admin account
+    #login info
     values = {'Username' : username, 'Password' : password_sha1, 'Pw' : password}
-    DATA = urllib.parse.urlencode(values)
-    DATA = DATA.encode('ascii')
+    #DATA = urllib.parse.urlencode(values)
+    #DATA = DATA.encode('ascii')
+    DATA = json.dumps(values)
+    DATA = DATA.encode("utf-8")
+    DATA = bytes(DATA)
 
-    headers = {'X-Emby-Authorization' : 'Emby UserId="'+ username  +'", Client="media_cleaner", Device="media_cleaner", DeviceId="media_cleaner", Version="0.2", Token=""'}
+    headers = {'X-Emby-Authorization' : 'Emby UserId="'+ username  +'", Client="media_cleaner", Device="media_cleaner", DeviceId="media_cleaner", Version="0.2", Token=""', 'Content-Type' : 'application/json'}
 
-    req = request.Request(url=server_url +'/Users/AuthenticateByName', data=DATA,method='POST', headers=headers)
+    req = request.Request(url=server_url + '/Users/AuthenticateByName', data=DATA, method='POST', headers=headers)
 
     with request.urlopen(req) as response:
         if response.getcode() == 200:
@@ -241,6 +273,9 @@ def get_auth_key(server_url, username, password, password_sha1):
     return(data['AccessToken'])
 
 
+#api call to get all user accounts
+#then choose account this script will use to delete watched media
+#choosen account does NOT need to have "Allow Media Deletion From" enabled
 def list_users(server_url, auth_key):
     #Get all users
     with request.urlopen(server_url +'/Users?api_key=' + auth_key) as response:
@@ -274,10 +309,11 @@ def list_users(server_url, auth_key):
         except:
             print('\nInvalid number. Try again.\n')
 
-    userID=data[int(user_number_int)]['Id']
+    userID=data[user_number_int]['Id']
     return(userID)
 
 
+#Get count of days since last watched
 def get_days_since_watched(date_last_played):
     #Get current time
     date_time_now = datetime.utcnow()
@@ -309,6 +345,7 @@ def get_days_since_watched(date_last_played):
     return(days_since_watched)
 
 
+#get season and episode numbers
 def get_season_episode(season_number, episode_number):
     season_num = str(season_number)
     season_num = season_num.zfill(2)
@@ -320,34 +357,30 @@ def get_season_episode(season_number, episode_number):
     return(season_episode)
 
 
+#determine if series or season is set to favorite
 def get_isfav_season_series(server_url, user_key, itemId, auth_key):
     #Get if season or series is marked as favorite for this item
     url=server_url + '/Users/' + user_key  + '/Items/' + itemId + '?api_key=' + auth_key
 
     if bool(cfg.DEBUG):
         #DEBUG
+        print('-----------------------------------------------------------')
         print(url)
     with request.urlopen(url) as response:
         if response.getcode() == 200:
             source = response.read()
             isfav_data = json.loads(source)
             if bool(cfg.DEBUG):
-                #print debug data to file
-                cwd = os.getcwd()
-                script_dir = os.path.dirname(__file__)
-                os.chdir(script_dir)
-                f = open("media_cleaner.debug", "a")
-                f.write(retjprint(isfav_data))
-                f.close()
-                os.chdir(cwd)
-                #print debug data to buffer
+                #DEBUG
                 #jprint(isfav_data)
+                pass
         else:
             print('An error occurred while attempting to retrieve data from the API.')
 
     return(isfav_data['UserData']['IsFavorite'])
 
 
+#determine if episode is set to favorite
 def get_isfav(isfav, item, server_url, user_key, auth_key):
     #Check if episode's favorite value already exists in dictionary
     if not item['Id'] in isfav['episode']:
@@ -363,6 +396,7 @@ def get_isfav(isfav, item, server_url, user_key, auth_key):
         isfav['series'][item['SeriesId']] = get_isfav_season_series(server_url, user_key, item['SeriesId'], auth_key)
     if bool(cfg.DEBUG):
         #DEBUG
+        print('-----------------------------------------------------------')
         print('Episode is favorite: ' + str(isfav['episode'][item['Id']]))
         print(' Season is favorite: ' + str(isfav['season'][item['SeasonId']]))
         print(' Series is favorite: ' + str(isfav['series'][item['SeriesId']]))
@@ -382,15 +416,17 @@ def get_isfav(isfav, item, server_url, user_key, auth_key):
     return(itemIsFav)
 
 
+#get watched media items; track media items ready to be deleted
 def get_items(server_url, user_key, auth_key):
     #Get list of all played items
+    print('')
     print('-----------------------------------------------------------')
     print('Start...')
     print('Cleaning media for server at: ' + server_url)
     print('-----------------------------------------------------------')
     print('\n')
     print('-----------------------------------------------------------')
-    print('Get List Of Watched Media')
+    print('Get List Of Watched Media:')
     print('-----------------------------------------------------------')
 
     url=server_url + '/Users/' + user_key  + '/Items?Recursive=true&IsPlayed=true&SortBy=Type,SeriesName,ParentIndexNumber,IndexNumber,Name&SortOrder=Ascending&api_key=' + auth_key
@@ -398,21 +434,15 @@ def get_items(server_url, user_key, auth_key):
     if bool(cfg.DEBUG):
         #DEBUG
         print(url)
+
     with request.urlopen(url) as response:
         if response.getcode() == 200:
             source = response.read()
             data = json.loads(source)
             if bool(cfg.DEBUG):
-                #print debug data to file
-                cwd = os.getcwd()
-                script_dir = os.path.dirname(__file__)
-                os.chdir(script_dir)
-                f = open("media_cleaner.debug", "w")
-                f.write(retjprint(data))
-                f.close()
-                os.chdir(cwd)
-                #print debug data to buffer
+                #DEBUG
                 #jprint(data)
+                pass
         else:
             print('An error occurred while attempting to retrieve data from the API.')
 
@@ -427,6 +457,7 @@ def get_items(server_url, user_key, auth_key):
     #Determine if media item is to be deleted or kept
     for item in data['Items']:
 
+        #find movie media items ready to delete
         if (item['Type'] == 'Movie'):
             if (
                (cfg.not_played_age_movie >= 0) and
@@ -452,6 +483,7 @@ def get_items(server_url, user_key, auth_key):
                         #DEBUG
                         print('\nError encountered - Keep Movie: \n' + str(item))
                 print(':[KEEPING] - ' + item_details)
+        #find tv-episode media items ready to delete
         elif (item['Type'] == 'Episode'):
             #Get if episode, season, or series is set as favorite
             itemIsFav=get_isfav(isfav, item, server_url, user_key, auth_key)
@@ -479,6 +511,7 @@ def get_items(server_url, user_key, auth_key):
                         #DEBUG
                         print('\nError encountered - Keep Episode: \n' + str(item))
                 print(':[KEEPING] - ' + item_details)
+        #find video media items ready to delete
         elif (item['Type'] == 'Video'):
             if (
                (item['Type'] == 'Video') and
@@ -505,6 +538,7 @@ def get_items(server_url, user_key, auth_key):
                         #DEBUG
                         print('\nError encountered - Keep Video: \n' + str(item))
                 print(':[KEEPING] - ' + item_details)
+        #find trailer media items ready to delete
         elif (item['Type'] == 'Trailer'):
             if (
                (cfg.not_played_age_trailer >= 0) and
@@ -530,6 +564,7 @@ def get_items(server_url, user_key, auth_key):
                         #DEBUG
                         print('\nError encountered - Keep Trailer: \n' + str(item))
                 print(':[KEEPING] - ' + item_details)
+        #idk what these are; keep them
         else: #(item['Type'] == 'Unknown')
             try:
                 item_details=item['Type'] + ' - ' + item['Name'] + ' - Favorite: ' + str(item['UserData']['IsFavorite'])  + ' - ID: ' +  item['Id']
@@ -543,20 +578,31 @@ def get_items(server_url, user_key, auth_key):
     if len(data['Items']) <= 0:
         print('[NO WATCHED ITEMS]')
 
+    if bool(cfg.DEBUG):
+        print('')
+        print('isfav: ')
+        print(isfav)
+        print('')
+
     print('-----------------------------------------------------------')
     print('\n')
     return(deleteItems)
 
 
+#list and delete items past watched threshold
 def list_delete_items(deleteItems):
     #List items to be deleted
     print('-----------------------------------------------------------')
     print('Summary Of Deleted Media:')
     if not bool(cfg.remove_files):
-        print('* Trial Run          *')
-        print('* remove_files=0     *')
-        print('* No Media Deleted   *')
-    print('-----------------------------------------------------------')
+        print('* Trial Run           *')
+        print('* remove_files=0      *')
+        print('* No Media Deleted    *')
+        print('* Items = ' + str(len(deleteItems)))
+        print('-----------------------------------------------------------')
+    else:
+        print('* Items Deleted = ' + str(len(deleteItems)))
+        print('-----------------------------------------------------------')
 
     if len(deleteItems) > 0:
         for item in deleteItems:
@@ -576,6 +622,7 @@ def list_delete_items(deleteItems):
                 item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
             else: # item['Type'] == 'Unknown':
                 pass
+            #Delete media item
             delete_item(item['Id'])
             print('[DELETED] ' + item_details)
     else:
@@ -586,12 +633,20 @@ def list_delete_items(deleteItems):
     print('-----------------------------------------------------------')
     print('Done.')
     print('-----------------------------------------------------------')
+    print('')
 
+############# START OF SCRIPT #############
 
 try:
+    #try importing the media_cleaner_config.py file
+    #if media_cleaner_config.py file does not exsit go to except and create one
     import media_cleaner_config as cfg
+    #try setting DEBUG variable from media_cleaner_config.py file
+    #if DEBUG does not exsit go to except and completely rebuild the media_cleaner_config.py file
     test=cfg.DEBUG
+    #removing DEBUG from media_cleaner_config.py file is sort of configuration reset
 
+    #depending on what is missing from media_cleaner_config.py file; try to only ask for certain input
     if (
         not hasattr(cfg, 'server_brand') or
         not hasattr(cfg, 'server_url') or
@@ -656,6 +711,9 @@ try:
             user_key=list_users(server_url, auth_key)
             print('-----------------------------------------------------------')
 
+        #warn user the configuration file is not complete
+        #the missing varibles are not saved and will need to be manually entered the next time the script is run
+        #a new media_cleaner_config.py file will need to be completed or manually updated without duplicates
         print('\n')
         print('-----------------------------------------------------------')
         print('ATTENTION!!!')
@@ -720,9 +778,21 @@ try:
         print('-----------------------------------------------------------')
         print ('\n')
 
+#the except
 except (AttributeError, ModuleNotFoundError):
+    #we are here because the media_cleaner_config.py file does not exist
+    #this is either the first time the script is running or media_cleaner_config.py file was deleted
+    #when this happens create a new media_cleaner_config.py file
+    #another possible reason we are here...
+    #the above attempt to set test=cfg.DEBUG failed likely because DEBUG is missing from the media_cleaner_config.py file
+    #when this happens create a new media_cleaner_config.py file
     generate_config()
+    #exit gracefully
     exit(0)
 
+#find media items to be deleted
 deleteItems=get_items(cfg.server_url, cfg.user_key, cfg.access_token)
+#list and delete found media items
 list_delete_items(deleteItems)
+
+############# END OF SCRIPT #############
