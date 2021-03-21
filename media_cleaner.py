@@ -371,8 +371,10 @@ def list_library_folders(server_url, auth_key):
                         librarypaths.add(pathlist[path_number_int])
                         if (len(librarypaths) >= i):
                             stop_loop=True
+                            print('')
                         else:
                             stop_loop=False
+                            print('')
 
                         #DEBUG
                         #print(librarypaths)
