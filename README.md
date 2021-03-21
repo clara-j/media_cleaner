@@ -22,6 +22,7 @@ filename: media_cleaner_config.py
 * keep_favorites_episode=1 - 1 Keep episodes, seasons, and series that have been marked as favorite; 0 Delete episodes marked as favorite
 * keep_favorites_video=1 - 1 Keep videos that have been marked as favorite; 0 Delete videos marked as favorite
 * keep_favorites_trailer=1 - 1 Keep trailers that have been marked as favorite; 0 Delete trailers marked as favorite
+* whitelisted_library_folders='/path/to/library/folder0,path/to/libray/folder1,/path/to/library/folderX' - Keep media in whitelisted library folders; or leave blank
 
 
 # Usage
