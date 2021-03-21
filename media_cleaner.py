@@ -537,9 +537,12 @@ def get_iswhitelisted(itemInfo):
     item_is_whitelisted=False
     #determine if media item's path matches one of the whitelist folders
     for path in whitelistentries:
-        if (itemInfo['Path'].startswith(path)):
-            item_is_whitelisted=True
-            return(item_is_whitelisted)
+        if not (path == ''):
+            if (itemInfo['Path'].startswith(path)):
+                item_is_whitelisted=True
+                return(item_is_whitelisted)
+            else:
+                item_is_whitelisted=False
         else:
             item_is_whitelisted=False
     return(item_is_whitelisted)
