@@ -336,9 +336,9 @@ def list_library_folders(server_url, auth_key):
             print('An error occurred while attempting to retrieve data from the API.')
 
     #define empty dictionary
-    pathlist={}
+    libraryfolders_dict={}
     #define empty set
-    librarypaths=set()
+    libraryfolders_set=set()
 
     stop_loop=False
     while (stop_loop == False):
@@ -346,17 +346,17 @@ def list_library_folders(server_url, auth_key):
         for path in data:
             for subpath in range(len(path['LibraryOptions']['PathInfos'])):
                 if ('NetworkPath' in path['LibraryOptions']['PathInfos'][subpath]):
-                    if not (path['LibraryOptions']['PathInfos'][subpath]['NetworkPath'] in librarypaths):
+                    if not (path['LibraryOptions']['PathInfos'][subpath]['NetworkPath'] in libraryfolders_set):
                         print(str(i) +' - '+ path['LibraryOptions']['PathInfos'][subpath]['Path'] + ' - (' + path['LibraryOptions']['PathInfos'][subpath]['NetworkPath'] +')')
-                        pathlist[i]=path['LibraryOptions']['PathInfos'][subpath]['NetworkPath']
+                        libraryfolders_dict[i]=path['LibraryOptions']['PathInfos'][subpath]['NetworkPath']
                 else:
-                    if not(path['LibraryOptions']['PathInfos'][subpath]['Path'] in librarypaths):
+                    if not(path['LibraryOptions']['PathInfos'][subpath]['Path'] in libraryfolders_set):
                         print(str(i) +' - '+ path['LibraryOptions']['PathInfos'][subpath]['Path'])
-                        pathlist[i]=path['LibraryOptions']['PathInfos'][subpath]['Path']
+                        libraryfolders_dict[i]=path['LibraryOptions']['PathInfos'][subpath]['Path']
                 i += 1
 
         if (i >= 1):
-            print('Choose library folder(s) to whitelist.')
+            print('Enter number of library folder to whitelist.')
             print('Media in whitelisted library folders will NOT be deleted.')
             path_number=input('Leave blank for none or when finished: ')
         else:
@@ -371,8 +371,8 @@ def list_library_folders(server_url, auth_key):
                 if ((path_number_float % 1) == 0):
                     path_number_int=int(path_number_float)
                     if ((path_number_int >= 0) and (path_number_int < i)):
-                        librarypaths.add(pathlist[path_number_int])
-                        if (len(librarypaths) >= i):
+                        libraryfolders_set.add(libraryfolders_dict[path_number_int])
+                        if (len(libraryfolders_set) >= i):
                             stop_loop=True
                             print('')
                         else:
@@ -380,7 +380,7 @@ def list_library_folders(server_url, auth_key):
                             print('')
 
                         #DEBUG
-                        #print(librarypaths)
+                        #print(libraryfolders_set)
                     else:
                         print('\nInvalid number. Try again.\n')
                 else:
@@ -388,12 +388,12 @@ def list_library_folders(server_url, auth_key):
         except:
             print('\nInvalid number. Try again.\n')
 
-    if (librarypaths == set()):
+    if (libraryfolders_set == set()):
         return('')
     else:
         i=0
         whitelistpaths=''
-        for libpaths in librarypaths:
+        for libpaths in libraryfolders_set:
             if (i == 0):
                 whitelistpaths = libpaths
             else:
@@ -954,4 +954,5 @@ except (AttributeError, ModuleNotFoundError):
 deleteItems=get_items(cfg.server_url, cfg.user_key, cfg.access_token)
 #list and delete found media items
 list_delete_items(deleteItems)
+
 ############# END OF SCRIPT #############
