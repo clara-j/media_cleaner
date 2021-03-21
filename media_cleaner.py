@@ -117,11 +117,13 @@ def get_admin_username():
 
 #admin password?
 def get_admin_password():
-    print('Plain text password used to grab access token; hashed password stored in config file.')
+    #print('Plain text password used to grab access token; hashed password stored in config file.')
+    print('Plain text password used to grab access token; password not stored in config file.')
     password=input('Enter admin password: ')
     return(password)
 
 
+#used of hashed password to be removed in future
 #hash admin password
 def get_admin_password_sha1(password):
     #password_sha1=password #input('Enter admin password (password will be hashed in config file): ')
@@ -167,7 +169,7 @@ def generate_config():
     config_file += "server_brand='" + server_brand + "'\n"
     config_file += "server_url='" + server_url + "'\n"
     config_file += "admin_username='" + username + "'\n"
-    config_file += "admin_password_sha1='" + password_sha1 + "'\n"
+    #config_file += "admin_password_sha1='" + password_sha1 + "'\n"
     config_file += "access_token='" + auth_key + "'\n"
     config_file += "user_key='" + user_key + "'\n"
     config_file += "DEBUG=0\n"
@@ -261,7 +263,7 @@ def get_auth_key(server_url, username, password, password_sha1):
     DATA = convert2json(values)
     DATA = DATA.encode("utf-8")
 
-    headers = {'X-Emby-Authorization' : 'Emby UserId="'+ username  +'", Client="media_cleaner", Device="media_cleaner", DeviceId="media_cleaner", Version="0.2", Token=""', 'Content-Type' : 'application/json'}
+    headers = {'X-Emby-Authorization' : 'Emby UserId="'+ username  +'", Client="media_cleaner", Device="media_cleaner", DeviceId="media_cleaner", Version="0.3", Token=""', 'Content-Type' : 'application/json'}
 
     req = request.Request(url=server_url + '/Users/AuthenticateByName', data=DATA, method='POST', headers=headers)
 
@@ -355,7 +357,7 @@ def list_library_folders(server_url, auth_key):
 
         if (i >= 1):
             print('Choose library folder(s) to whitelist.')
-            print('Media in whitelisted library folders will NOT be deleted.')            
+            print('Media in whitelisted library folders will NOT be deleted.')
             path_number=input('Leave blank for none or when finished: ')
         else:
             path_number=''
@@ -363,6 +365,7 @@ def list_library_folders(server_url, auth_key):
         try:
             if (path_number == ''):
                 stop_loop=True
+                print('')
             else:
                 path_number_float=float(path_number)
                 if ((path_number_float % 1) == 0):
@@ -792,7 +795,7 @@ try:
         not hasattr(cfg, 'server_brand') or
         not hasattr(cfg, 'server_url') or
         not hasattr(cfg, 'admin_username') or
-        not hasattr(cfg, 'admin_password_sha1') or
+        #not hasattr(cfg, 'admin_password_sha1') or
         not hasattr(cfg, 'access_token') or
         not hasattr(cfg, 'user_key') or
         not hasattr(cfg, 'keep_favorites_movie') or
@@ -810,7 +813,7 @@ try:
             not hasattr(cfg, 'server_brand') or
             not hasattr(cfg, 'server_url') or
             not hasattr(cfg, 'admin_username') or
-            not hasattr(cfg, 'admin_password_sha1') or
+            #not hasattr(cfg, 'admin_password_sha1') or
             not hasattr(cfg, 'access_token') or
             not hasattr(cfg, 'user_key') or
             not hasattr(cfg, 'whitelisted_library_folders')
@@ -822,8 +825,8 @@ try:
                 delattr(cfg, 'server_url')
             if hasattr(cfg, 'admin_username'):
                 delattr(cfg, 'admin_username')
-            if hasattr(cfg, 'admin_password_sha1'):
-                delattr(cfg, 'admin_password_sha1')
+            #if hasattr(cfg, 'admin_password_sha1'):
+                #delattr(cfg, 'admin_password_sha1')
             if hasattr(cfg, 'access_token'):
                 delattr(cfg, 'access_token')
             if hasattr(cfg, 'user_key'):
@@ -883,9 +886,9 @@ try:
         if not hasattr(cfg, 'admin_username'):
             print('admin_username=\'' + str(username) + '\'')
             setattr(cfg, 'admin_username', username)
-        if not hasattr(cfg, 'admin_password_sha1'):
-            print('admin_password_sha1=\'' + str(password_sha1) + '\'')
-            setattr(cfg, 'admin_password_sha1', password_sha1)
+        #if not hasattr(cfg, 'admin_password_sha1'):
+            #print('admin_password_sha1=\'' + str(password_sha1) + '\'')
+            #setattr(cfg, 'admin_password_sha1', password_sha1)
         if not hasattr(cfg, 'access_token'):
             print('access_token=\'' + str(auth_key) + '\'')
             setattr(cfg, 'access_token', auth_key)
