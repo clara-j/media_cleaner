@@ -322,7 +322,7 @@ def list_users(server_url, auth_key):
 
 
 #api call to get library folders
-#then choose directories to whitelist
+#then choose which folders to whitelist
 def list_library_folders(server_url, auth_key):
     #get all library paths
     with request.urlopen(server_url + '/Library/VirtualFolders?api_key=' + auth_key) as response:
@@ -347,12 +347,18 @@ def list_library_folders(server_url, auth_key):
             for subpath in range(len(path['LibraryOptions']['PathInfos'])):
                 if ('NetworkPath' in path['LibraryOptions']['PathInfos'][subpath]):
                     if not (path['LibraryOptions']['PathInfos'][subpath]['NetworkPath'] in libraryfolders_set):
-                        print(str(i) +' - '+ path['LibraryOptions']['PathInfos'][subpath]['Path'] + ' - (' + path['LibraryOptions']['PathInfos'][subpath]['NetworkPath'] +')')
+                        print(str(i) + ' - ' + path['LibraryOptions']['PathInfos'][subpath]['Path'] + ' - (' + path['LibraryOptions']['PathInfos'][subpath]['NetworkPath'] +')')
                         libraryfolders_dict[i]=path['LibraryOptions']['PathInfos'][subpath]['NetworkPath']
-                else:
+                    else:
+                        #show blank entry
+                        print(str(i) + ' - ')
+                else: #('Path' in path['LibraryOptions']['PathInfos'][subpath]):
                     if not(path['LibraryOptions']['PathInfos'][subpath]['Path'] in libraryfolders_set):
-                        print(str(i) +' - '+ path['LibraryOptions']['PathInfos'][subpath]['Path'])
+                        print(str(i) + ' - ' + path['LibraryOptions']['PathInfos'][subpath]['Path'])
                         libraryfolders_dict[i]=path['LibraryOptions']['PathInfos'][subpath]['Path']
+                    else:
+                        #show blank entry
+                        print(str(i) + ' - ')
                 i += 1
 
         if (i >= 1):
@@ -393,11 +399,11 @@ def list_library_folders(server_url, auth_key):
     else:
         i=0
         whitelistpaths=''
-        for libpaths in libraryfolders_set:
+        for libfolders in libraryfolders_set:
             if (i == 0):
-                whitelistpaths = libpaths
+                whitelistpaths = libfolders
             else:
-                whitelistpaths = libpaths + ',' + whitelistpaths
+                whitelistpaths = libfolders + ',' + whitelistpaths
             i += 1
         return(whitelistpaths)
 
@@ -446,9 +452,10 @@ def get_season_episode(season_number, episode_number):
     return(season_episode)
 
 
-#determine if series or season is set to favorite
-def get_isfav_season_series(server_url, user_key, itemId, auth_key):
-    #Get if season or series is marked as favorite for this item
+#get additional item info needed to determine if parent of item is favorite
+#get additional item info needed to determine if media item is in whitelist
+def get_additional_item_info(server_url, user_key, itemId, auth_key):
+    #Get additonal item information
     url=server_url + '/Users/' + user_key  + '/Items/' + itemId + '?api_key=' + auth_key
 
     if bool(cfg.DEBUG):
@@ -458,14 +465,15 @@ def get_isfav_season_series(server_url, user_key, itemId, auth_key):
     with request.urlopen(url) as response:
         if response.getcode() == 200:
             source = response.read()
-            isfav_data = json.loads(source)
+            itemInfo = json.loads(source)
             if bool(cfg.DEBUG):
                 #DEBUG
-                print2json(isfav_data)
+                print('get_additional_item_info')
+                print2json(itemInfo)
         else:
             print('An error occurred while attempting to retrieve data from the API.')
 
-    return(isfav_data['UserData']['IsFavorite'])
+    return(itemInfo)
 
 
 #determine if episode is set to favorite
@@ -477,11 +485,11 @@ def get_isfav(isfav, item, server_url, user_key, auth_key):
     #Check if season's favorite value already exists in dictionary
     if not item['SeasonId'] in isfav['season']:
         #Store if the season is marked as a favorite
-        isfav['season'][item['SeasonId']] = get_isfav_season_series(server_url, user_key, item['SeasonId'], auth_key)
+        isfav['season'][item['SeasonId']] = get_additional_item_info(server_url, user_key, item['SeasonId'], auth_key)['UserData']['IsFavorite']
     #Check if series' favorite value already exists in dictionary
     if not item['SeriesId'] in isfav['series']:
         #Store if the series is marked as a favorite
-        isfav['series'][item['SeriesId']] = get_isfav_season_series(server_url, user_key, item['SeriesId'], auth_key)
+        isfav['series'][item['SeriesId']] = get_additional_item_info(server_url, user_key, item['SeriesId'], auth_key)['UserData']['IsFavorite']
     if bool(cfg.DEBUG):
         #DEBUG
         print('-----------------------------------------------------------')
@@ -504,32 +512,9 @@ def get_isfav(isfav, item, server_url, user_key, auth_key):
     return(itemIsFav)
 
 
-#get additional item info needed to determine if parent of item is favorite
-#get additional item info needed to determine if media item is in whitelist
-def get_additional_item_info(item, server_url, user_key, auth_key):
-    #Get additonal item information
-    url=server_url + '/Users/' + user_key  + '/Items/' + item['Id'] + '?api_key=' + auth_key
-
-    if bool(cfg.DEBUG):
-        #DEBUG
-        print('-----------------------------------------------------------')
-        print(url)
-    with request.urlopen(url) as response:
-        if response.getcode() == 200:
-            source = response.read()
-            itemInfo = json.loads(source)
-            if bool(cfg.DEBUG):
-                #DEBUG
-                print('get_additional_item_info')
-                print2json(itemInfo)
-        else:
-            print('An error occurred while attempting to retrieve data from the API.')
-
-    return(itemInfo)
-
-
 #determine if media item is in whitelisted folder
-def get_iswhitelisted(itemInfo):
+#def get_iswhitelisted(itemInfo):
+def get_iswhitelisted(itemPath):
     #read whitelist configuration variable
     whitelist=cfg.whitelisted_library_folders
     whitelistentries=whitelist.split(',')
@@ -538,7 +523,7 @@ def get_iswhitelisted(itemInfo):
     #determine if media item's path matches one of the whitelist folders
     for path in whitelistentries:
         if not (path == ''):
-            if (itemInfo['Path'].startswith(path)):
+            if (itemPath.startswith(path)):
                 item_is_whitelisted=True
                 return(item_is_whitelisted)
             else:
@@ -590,8 +575,8 @@ def get_items(server_url, user_key, auth_key):
         #find movie media items ready to delete
         if (item['Type'] == 'Movie'):
             #Get if media item is whitelisted
-            item_info=get_additional_item_info(item, server_url, user_key, auth_key)
-            itemIsWhiteListed=get_iswhitelisted(item_info)
+            item_info=get_additional_item_info(server_url, user_key, item['Id'], auth_key)
+            itemIsWhiteListed=get_iswhitelisted(item_info['Path'])
             if (
                (cfg.not_played_age_movie >= 0) and
                (item['UserData']['PlayCount'] >= 1) and
@@ -622,8 +607,8 @@ def get_items(server_url, user_key, auth_key):
             #Get if episode, season, or series is set as favorite
             itemIsFav=get_isfav(isfav, item, server_url, user_key, auth_key)
             #Get if media item is whiteliested
-            item_info=get_additional_item_info(item, server_url, user_key, auth_key)
-            itemIsWhiteListed=get_iswhitelisted(item_info)
+            item_info=get_additional_item_info(server_url, user_key, item['Id'], auth_key)
+            itemIsWhiteListed=get_iswhitelisted(item_info['Path'])
             if (
                (cfg.not_played_age_episode >= 0) and
                (item['UserData']['PlayCount'] >= 1) and
@@ -652,8 +637,8 @@ def get_items(server_url, user_key, auth_key):
         #find video media items ready to delete
         elif (item['Type'] == 'Video'):
             #Get if media item is whiteliested
-            item_info=get_additional_item_info(item, server_url, user_key, auth_key)
-            itemIsWhiteListed=get_iswhitelisted(item_info)
+            item_info=get_additional_item_info(server_url, user_key, item['Id'], auth_key)
+            itemIsWhiteListed=get_iswhitelisted(item_info['Path'])
             if (
                (item['Type'] == 'Video') and
                (cfg.not_played_age_video >= 0) and
@@ -683,8 +668,8 @@ def get_items(server_url, user_key, auth_key):
         #find trailer media items ready to delete
         elif (item['Type'] == 'Trailer'):
             #Get if media item is whiteliested
-            item_info=get_additional_item_info(item, server_url, user_key, auth_key)
-            itemIsWhiteListed=get_iswhitelisted(item_info)
+            item_info=get_additional_item_info(server_url, user_key, item['Id'], auth_key)
+            itemIsWhiteListed=get_iswhitelisted(item_info['Path'])
             if (
                (cfg.not_played_age_trailer >= 0) and
                (item['UserData']['PlayCount'] >= 1) and
@@ -748,7 +733,7 @@ def list_delete_items(deleteItems):
         print('* Items = ' + str(len(deleteItems)))
         print('-----------------------------------------------------------')
     else:
-        print('* Items Deleted = ' + str(len(deleteItems)))
+        print('* Items Deleted = ' + str(len(deleteItems)) + '    *')
         print('-----------------------------------------------------------')
 
     if len(deleteItems) > 0:
