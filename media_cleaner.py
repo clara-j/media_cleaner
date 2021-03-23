@@ -261,7 +261,7 @@ def get_auth_key(server_url, username, password, password_sha1):
     #DATA = urllib.parse.urlencode(values)
     #DATA = DATA.encode('ascii')
     DATA = convert2json(values)
-    DATA = DATA.encode("utf-8")
+    DATA = DATA.encode('utf-8')
 
     headers = {'X-Emby-Authorization' : 'Emby UserId="'+ username  +'", Client="media_cleaner", Device="media_cleaner", DeviceId="media_cleaner", Version="0.3", Token=""', 'Content-Type' : 'application/json'}
 
@@ -401,10 +401,11 @@ def list_library_folders(server_url, auth_key):
         whitelistpaths=''
         for libfolders in libraryfolders_set:
             if (i == 0):
-                whitelistpaths = libfolders
+                whitelistpaths = libfolders.replace('\'','\\\'')
             else:
-                whitelistpaths = libfolders + ',' + whitelistpaths
+                whitelistpaths = libfolders.replace('\'','\\\'') + ',' + whitelistpaths
             i += 1
+
         return(whitelistpaths)
 
 
@@ -513,7 +514,6 @@ def get_isfav(isfav, item, server_url, user_key, auth_key):
 
 
 #determine if media item is in whitelisted folder
-#def get_iswhitelisted(itemInfo):
 def get_iswhitelisted(itemPath):
     #read whitelist configuration variable
     whitelist=cfg.whitelisted_library_folders
