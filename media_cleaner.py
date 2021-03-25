@@ -261,15 +261,12 @@ def delete_item(itemID):
         print(itemID)
         print(url)
         print(req)
-#    if (cfg.remove_files == 1):
     if bool(cfg.remove_files):
         try:
-            #request.urlopen(req)
-            print('equals 1')
+            request.urlopen(req)
         except Exception:
             print('generic exception: ' + traceback.format_exc())
     else:
-        print('does not equal 1')
         return
 
 
