@@ -125,10 +125,10 @@ def get_admin_password():
 
 #used of hashed password to be removed in future
 #hash admin password
-def get_admin_password_sha1(password):
-    #password_sha1=password #input('Enter admin password (password will be hashed in config file): ')
-    password_sha1=hashlib.sha1(password.encode()).hexdigest()
-    return(password_sha1)
+#def get_admin_password_sha1(password):
+#    #password_sha1=password #input('Enter admin password (password will be hashed in config file): ')
+#    password_sha1=hashlib.sha1(password.encode()).hexdigest()
+#    return(password_sha1)
 
 
 #get user input needed to build the media_cleaner_config.py file
@@ -151,10 +151,9 @@ def generate_config():
     username=get_admin_username()
     print('-----------------------------------------------------------')
     password=get_admin_password()
-    password_sha1=get_admin_password_sha1(password)
     print('-----------------------------------------------------------')
 
-    auth_key=get_auth_key(server_url, username, password, password_sha1)
+    auth_key=get_auth_key(server_url, username, password)
     user_key=list_users(server_url, auth_key)
     print('-----------------------------------------------------------')
     whitelist=list_library_folders(server_url, auth_key)
@@ -168,9 +167,10 @@ def generate_config():
 
     config_file=''
     config_file += "#----------------------------------------------------------#\n"
-    config_file += "# 0-365000 - Delete media type once it has been watched x days ago\n"
+    config_file += "# 0-365000000 - Delete media type once it has been watched x days ago\n"
     config_file += "# -1 : to disable managing specified media type\n"
     config_file += "# (-1 : default)\n"
+    config_file += "# Audio media is a work in progress...\n"
     config_file += "#----------------------------------------------------------#\n"
     config_file += "not_played_age_movie=" + not_played_age_movie + "\n"
     config_file += "not_played_age_episode=" + not_played_age_episode + "\n"
@@ -204,7 +204,7 @@ def generate_config():
     #config_file += "#----------------------------------------------------------#\n"
     config_file += "\n"
     config_file += "#----------------------------------------------------------#\n"
-    config_file += "# 0 - Disable the ability to delete media\n"
+    config_file += "# 0 - Disable the ability to delete media (dry run mode)\n"
     config_file += "# 1 - Enable the ability to delete media\n"
     config_file += "# (0 - default)\n"
     config_file += "#----------------------------------------------------------#\n"
@@ -215,19 +215,18 @@ def generate_config():
     config_file += "server_brand='" + server_brand + "'\n"
     config_file += "server_url='" + server_url + "'\n"
     config_file += "admin_username='" + username + "'\n"
-    #config_file += "admin_password_sha1='" + password_sha1 + "'\n"
     config_file += "access_token='" + auth_key + "'\n"
     config_file += "user_key='" + user_key + "'\n"
     config_file += "DEBUG=0\n"
     #config_file += "#----------------------------------------------------------#"
 
-    #Create config file next to the script even when cwd is not the same
+    #Create config file next to the script even when cwd (Current Working Directory) is not the same
     cwd = os.getcwd()
     script_dir = os.path.dirname(__file__)
     if (script_dir == ''):
-        #script run from cwd
-        #set script_dir to '.' (aka this directory) to prevent error when attempting to change to '' (aka a blank directory)
-        script_dir='.'
+        #script must have been run from the cwd
+        #set script_dir to cwd (aka this directory) to prevent error when attempting to change to '' (aka a blank directory)
+        script_dir=cwd
     os.chdir(script_dir)
     f = open("media_cleaner_config.py", "w")
     f.write(config_file)
@@ -235,14 +234,21 @@ def generate_config():
     os.chdir(cwd)
 
     print('\n\n-----------------------------------------------------------')
-    print('Config file is not setup to delete media')
-    print('To delete media set remove_files=1 in media_cleaner_config.py')
+    print('Config file is not setup to manage media types.')
     print('-----------------------------------------------------------')
-    print('Config file contents:')
+    print('To manage media types open media_cleaner_config.py in a text editor:')
+    print('    Set \'not_played_age_movie\' to zero or a positive number')
+    print('    Set \'not_played_age_episode\' to zero or a positive number')
+    print('    Set \'not_played_age_video\' to zero or a positive number')
+    print('    Set \'not_played_age_trailer\' to zero or a positive number')
+    print('    Set \'not_played_age_audio\' to zero or a positive number')
     print('-----------------------------------------------------------')
-    print(config_file)
+    print('Config file is in dry run mode to prevent deleting media types.')
     print('-----------------------------------------------------------')
-    print('Config file created, try running again')
+    print('To delete media types open media_cleaner_config.py in a text editor:')
+    print('    Set \'remove_files=1\' in media_cleaner_config.py')
+    print('-----------------------------------------------------------')
+    print('Edit the config file and try running again.')
     print('-----------------------------------------------------------')
 
 
@@ -255,19 +261,22 @@ def delete_item(itemID):
         print(itemID)
         print(url)
         print(req)
+#    if (cfg.remove_files == 1):
     if bool(cfg.remove_files):
         try:
-            request.urlopen(req)
+            #request.urlopen(req)
+            print('equals 1')
         except Exception:
             print('generic exception: ' + traceback.format_exc())
     else:
+        print('does not equal 1')
         return
 
 
 #api call to get admin account authentication token
-def get_auth_key(server_url, username, password, password_sha1):
+def get_auth_key(server_url, username, password):
     #login info
-    values = {'Username' : username, 'Password' : password_sha1, 'Pw' : password}
+    values = {'Username' : username, 'Pw' : password}
     #DATA = urllib.parse.urlencode(values)
     #DATA = DATA.encode('ascii')
     DATA = convert2json(values)
@@ -420,7 +429,7 @@ def list_library_folders(server_url, auth_key):
 
 
 #Get count of days since last watched
-def get_days_since_watched(date_last_played):
+def get_days_since_played(date_last_played):
     #Get current time
     date_time_now = datetime.utcnow()
 
@@ -428,36 +437,46 @@ def get_days_since_watched(date_last_played):
       #split date_last_played after seconds
     try:
         split_date_micro_tz = date_last_played.split(".")
-        date_time_last_watched = datetime.strptime(date_last_played, '%Y-%m-%dT%H:%M:%S.' + split_date_micro_tz[1])
+        date_time_last_played = datetime.strptime(date_last_played, '%Y-%m-%dT%H:%M:%S.' + split_date_micro_tz[1])
     except (ValueError):
-        date_time_last_watched = 'unknown date time format'
+        date_time_last_played = 'unknown date time format'
 
     if bool(cfg.DEBUG):
         #DEBUG
-        print(date_time_last_watched)
+        print(date_time_last_played)
 
-    if not (date_time_last_watched == 'unknown date time format'):
-        date_time_delta = date_time_now - date_time_last_watched
+    if not (date_time_last_played == 'unknown date time format'):
+        date_time_delta = date_time_now - date_time_last_played
         s_date_time_delta = str(date_time_delta)
-        days_since_watched = s_date_time_delta.split(' day')[0]
-        if ':' in days_since_watched:
-            days_since_watched = 'Played <1 day ago'
-        elif days_since_watched == '1':
-            days_since_watched = 'Played ' + days_since_watched + ' day ago'
+        days_since_played = s_date_time_delta.split(' day')[0]
+        if ':' in days_since_played:
+            days_since_played = 'Played <1 day ago'
+        elif days_since_played == '1':
+            days_since_played = 'Played ' + days_since_played + ' day ago'
         else:
-            days_since_watched = 'Played ' + days_since_watched + ' days ago'
+            days_since_played = 'Played ' + days_since_played + ' days ago'
     else:
-        days_since_watched='0'
-    return(days_since_watched)
+        days_since_played='0'
+    return(days_since_played)
 
 
 #get season and episode numbers
 def get_season_episode(season_number, episode_number):
     season_num = str(season_number)
-    season_num = season_num.zfill(2)
+    season_num_len=len(str(season_number))
 
     episode_num = str(episode_number)
-    episode_num = episode_num.zfill(2)
+    episode_num_len=len(str(episode_num))
+
+    if (season_num_len <= 2) and (episode_num_len <= 2):
+        season_num = season_num.zfill(2)
+        episode_num = episode_num.zfill(2)
+    elif (season_num_len >= episode_num_len):
+        season_num = season_num.zfill(season_num_len)
+        episode_num = episode_num.zfill(season_num_len)
+    else: #(season_num_len < episode_num_len):
+        season_num = season_num.zfill(episode_num_len)
+        episode_num = episode_num.zfill(episode_num_len)
 
     season_episode = 's' + season_num + '.e' + episode_num
     return(season_episode)
@@ -605,7 +624,7 @@ def get_items(server_url, user_key, auth_key):
                (not itemIsWhiteListed)
                ):
                 try:
-                    item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'MovieID: ' + item['Id']
+                    item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'MovieID: ' + item['Id']
                 except (KeyError):
                     item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
@@ -617,7 +636,7 @@ def get_items(server_url, user_key, auth_key):
                 pass
             else:
                 try:
-                    item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'MovieID: ' + item['Id']
+                    item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'MovieID: ' + item['Id']
                 except (KeyError):
                     item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
@@ -639,7 +658,7 @@ def get_items(server_url, user_key, auth_key):
                (not itemIsWhiteListed)
                ):
                 try:
-                    item_details=item['Type'] + ' - ' + item['SeriesName'] + ' - ' + get_season_episode(item['ParentIndexNumber'], item['IndexNumber']) + ' - ' + item['Name'] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(itemisfav_TVess) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'EpisodeID: ' + item['Id']
+                    item_details=item['Type'] + ' - ' + item['SeriesName'] + ' - ' + get_season_episode(item['ParentIndexNumber'], item['IndexNumber']) + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(itemisfav_TVess) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'EpisodeID: ' + item['Id']
                 except (KeyError):
                     item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
@@ -651,7 +670,7 @@ def get_items(server_url, user_key, auth_key):
                 pass
             else:
                 try:
-                    item_details=item['Type'] + ' - ' + item['SeriesName'] + ' - ' + get_season_episode(item['ParentIndexNumber'], item['IndexNumber']) + ' - ' + item['Name'] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(itemisfav_TVess) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'EpisodeID: ' + item['Id']
+                    item_details=item['Type'] + ' - ' + item['SeriesName'] + ' - ' + get_season_episode(item['ParentIndexNumber'], item['IndexNumber']) + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(itemisfav_TVess) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'EpisodeID: ' + item['Id']
                 except (KeyError):
                     item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
@@ -672,7 +691,7 @@ def get_items(server_url, user_key, auth_key):
                (not itemIsWhiteListed)
                ):
                 try:
-                    item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate']) + ' -  Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'VideoID: ' + item['Id']
+                    item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' -  Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'VideoID: ' + item['Id']
                 except (KeyError):
                     item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
@@ -684,7 +703,7 @@ def get_items(server_url, user_key, auth_key):
                 pass
             else:
                 try:
-                    item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'VideoID: ' + item['Id']
+                    item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'VideoID: ' + item['Id']
                 except (KeyError):
                     item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
@@ -704,7 +723,7 @@ def get_items(server_url, user_key, auth_key):
                (not itemIsWhiteListed)
                ):
                 try:
-                    item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate']) + ' -  Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrailerID: ' + item['Id']
+                    item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' -  Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrailerID: ' + item['Id']
                 except (KeyError):
                     item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
@@ -716,7 +735,7 @@ def get_items(server_url, user_key, auth_key):
                 pass
             else:
                 try:
-                    item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrailerID: ' + item['Id']
+                    item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrailerID: ' + item['Id']
                 except (KeyError):
                     item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
@@ -736,7 +755,7 @@ def get_items(server_url, user_key, auth_key):
                (not itemIsWhiteListed)
                ):
                 try:
-                    item_details=item['Type'] + ' - ' + item['Name'] + ' - Album: ' + item['Album'] + ' - Artist: ' + item['Artists'][0] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate']) + ' -  Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrackID: ' + item['Id']
+                    item_details=item['Type'] + ' - ' + item['Name'] + ' - Album: ' + item['Album'] + ' - Artist: ' + item['Artists'][0] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' -  Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrackID: ' + item['Id']
                 except (KeyError):
                     item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
@@ -748,7 +767,7 @@ def get_items(server_url, user_key, auth_key):
                 pass
             else:
                 try:
-                    item_details=item['Type'] + ' - ' + item['Name'] + ' - Album: ' + item['Album'] + ' - Artist: ' + item['Artists'][0] + ' - ' + get_days_since_watched(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrackID: ' + item['Id']
+                    item_details=item['Type'] + ' - ' + item['Name'] + ' - Album: ' + item['Album'] + ' - Artist: ' + item['Artists'][0] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrackID: ' + item['Id']
                 except (KeyError):
                     item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
@@ -834,6 +853,142 @@ def list_delete_items(deleteItems):
     print('-----------------------------------------------------------')
     print('')
 
+
+#Check select config variables are an expected value
+def cfgVarValCheck():
+    #need to find clean way to put cfg.variable_names in a dict/list/etc... and use the dict/list/etc... to call the varibles by name in a for loop
+    test=cfg.not_played_age_movie
+    if (
+        not ((type(test) is int) and
+        (test >= -1) and
+        (test <= 365000000))
+       ):
+        raise TypeError('not_played_age_movie must be an integer; valid range -1 thru 365000000')
+
+    test=cfg.not_played_age_episode
+    if (
+        not ((type(test) is int) and
+        (test >= -1) and
+        (test <= 365000000))
+       ):
+        raise TypeError('not_played_age_episode must be an integer; valid range -1 thru 365000000')
+
+    test=cfg.not_played_age_video
+    if (
+        not ((type(test) is int) and
+        (test >= -1) and
+        (test <= 365000000))
+       ):
+        raise TypeError('not_played_age_video must be an integer; valid range -1 thru 365000000')
+
+    test=cfg.not_played_age_trailer
+    if (
+        not ((type(test) is int) and
+        (test >= -1) and
+        (test <= 365000000))
+       ):
+        raise TypeError('not_played_age_trailer must be an integer; valid range -1 thru 365000000')
+
+    test=cfg.not_played_age_audio
+    if (
+        not ((type(test) is int) and
+        (test >= -1) and
+        (test <= 365000000))
+       ):
+        raise TypeError('not_played_age_audio must be an integer; valid range -1 thru 365000000')
+
+    test=cfg.keep_favorites_movie
+    if (
+        not ((type(test) is int) and
+        (test >= 0) and
+        (test <= 1))
+       ):
+        raise TypeError('keep_favorites_movie must be an integer; valid values 0 and 1')
+
+    test=cfg.keep_favorites_episode
+    if (
+        not ((type(test) is int) and
+        (test >= 0) and
+        (test <= 1))
+       ):
+        raise TypeError('keep_favorites_episode must be an integer; valid values 0 and 1')
+
+    test=cfg.keep_favorites_video
+    if (
+        not ((type(test) is int) and
+        (test >= 0) and
+        (test <= 1))
+       ):
+        raise TypeError('keep_favorites_video must be an integer; valid values 0 and 1')
+
+    test=cfg.keep_favorites_trailer
+    if (
+        not ((type(test) is int) and
+        (test >= 0) and
+        (test <= 1))
+       ):
+        raise TypeError('keep_favorites_trailer must be an integer; valid values 0 and 1')
+
+    test=cfg.keep_favorites_audio
+    if (
+        not ((type(test) is int) and
+        (test >= 0) and
+        (test <= 1))
+       ):
+        raise TypeError('keep_favorites_audio must be an integer; valid values 0 and 1')
+
+    test=cfg.whitelisted_library_folders
+    if (
+        not (type(test) is str)
+       ):
+        raise TypeError('whitelisted_library_folders must be a string')
+
+    test=cfg.remove_files
+    if (
+        not ((type(test) is int) and
+        (test >= 0) and
+        (test <= 1))
+       ):
+        raise TypeError('remove_files must be an integer; valid values 0 and 1')
+
+    test=cfg.server_brand
+    if (
+        not (type(test) is str)
+       ):
+        raise TypeError('server_brand must be a string')
+
+    test=cfg.server_url
+    if (
+        not (type(test) is str)
+       ):
+        raise TypeError('server_url must be a string')
+
+    test=cfg.admin_username
+    if (
+        not (type(test) is str)
+       ):
+        raise TypeError('admin_username must be a string')
+
+    test=cfg.access_token
+    if (
+        not (type(test) is str)
+       ):
+        raise TypeError('access_token must be a string')
+
+    test=cfg.user_key
+    if (
+        not (type(test) is str)
+       ):
+        raise TypeError('user_key must be a string')
+
+    test=cfg.DEBUG
+    if (
+        not ((type(test) is int) and
+        (test >= 0) and
+        (test <= 1))
+       ):
+        raise TypeError('DEBUG must be an integer; valid values 0 and 1')
+
 ############# START OF SCRIPT #############
 
 try:
@@ -850,7 +1005,6 @@ try:
         not hasattr(cfg, 'server_brand') or
         not hasattr(cfg, 'server_url') or
         not hasattr(cfg, 'admin_username') or
-        #not hasattr(cfg, 'admin_password_sha1') or
         not hasattr(cfg, 'access_token') or
         not hasattr(cfg, 'user_key') or
         not hasattr(cfg, 'keep_favorites_movie') or
@@ -870,7 +1024,6 @@ try:
             not hasattr(cfg, 'server_brand') or
             not hasattr(cfg, 'server_url') or
             not hasattr(cfg, 'admin_username') or
-            #not hasattr(cfg, 'admin_password_sha1') or
             not hasattr(cfg, 'access_token') or
             not hasattr(cfg, 'user_key') or
             not hasattr(cfg, 'whitelisted_library_folders')
@@ -882,8 +1035,6 @@ try:
                 delattr(cfg, 'server_url')
             if hasattr(cfg, 'admin_username'):
                 delattr(cfg, 'admin_username')
-            #if hasattr(cfg, 'admin_password_sha1'):
-                #delattr(cfg, 'admin_password_sha1')
             if hasattr(cfg, 'access_token'):
                 delattr(cfg, 'access_token')
             if hasattr(cfg, 'user_key'):
@@ -909,10 +1060,9 @@ try:
             username=get_admin_username()
             print('-----------------------------------------------------------')
             password=get_admin_password()
-            password_sha1=get_admin_password_sha1(password)
             print('-----------------------------------------------------------')
 
-            auth_key=get_auth_key(server_url, username, password, password_sha1)
+            auth_key=get_auth_key(server_url, username, password)
             user_key=list_users(server_url, auth_key)
             print('-----------------------------------------------------------')
 
@@ -927,7 +1077,7 @@ try:
         print('ATTENTION!!!')
         print('Old or incomplete config in use.')
         print('1) Delete media_cleaner_config.py and run this again to create a new config.')
-        print('Or')
+        print('   Or')
         print('2) Delete DEBUG from media_cleaner_config.py and run this again to create a new config.')
         print('-----------------------------------------------------------')
         print('Matching value(s) in media_cleaner_config.py ignored.')
@@ -983,9 +1133,6 @@ try:
         if not hasattr(cfg, 'admin_username'):
             print('admin_username=\'' + str(username) + '\'')
             setattr(cfg, 'admin_username', username)
-        #if not hasattr(cfg, 'admin_password_sha1'):
-            #print('admin_password_sha1=\'' + str(password_sha1) + '\'')
-            #setattr(cfg, 'admin_password_sha1', password_sha1)
         if not hasattr(cfg, 'access_token'):
             print('access_token=\'' + str(auth_key) + '\'')
             setattr(cfg, 'access_token', auth_key)
@@ -993,7 +1140,7 @@ try:
             print('user_key=\'' + str(user_key) + '\'')
             setattr(cfg, 'user_key', user_key)
 
-        print('DEBUG=' + str(cfg.DEBUG))
+        #print('DEBUG=' + str(cfg.DEBUG))
 
         print('-----------------------------------------------------------')
         print ('\n')
@@ -1010,6 +1157,8 @@ except (AttributeError, ModuleNotFoundError):
     #exit gracefully
     exit(0)
 
+#check config values are what we expect them to be
+cfgVarValCheck()
 #find media items to be deleted
 deleteItems=get_items(cfg.server_url, cfg.user_key, cfg.access_token)
 #list and delete found media items
