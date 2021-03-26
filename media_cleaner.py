@@ -787,7 +787,7 @@ def get_items(server_url, user_key, auth_key):
                     #DEBUG
                     print('\nError encountered - Keep Unknown Media Type: \n' + str(item))
             if bool(cfg.DEBUG):
-                print(':[KEEPING ' + str(item['Type'])  + ' MEDIA TYPE] - ' + item_details)
+                print(':[KEEPING] - ' + item_details)
 
     if len(data['Items']) <= 0:
         print('[NO WATCHED ITEMS]')
