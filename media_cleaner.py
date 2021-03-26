@@ -699,7 +699,7 @@ def get_items(server_url, user_key, auth_key):
                (not itemIsWhiteListed)
                ):
                 try:
-                    item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' -  Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'VideoID: ' + item['Id']
+                    item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' -  Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'VideoID: ' + item['Id']
                 except (KeyError):
                     item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
@@ -709,7 +709,7 @@ def get_items(server_url, user_key, auth_key):
                 deleteItems.append(item)
             else:
                 try:
-                    item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'VideoID: ' + item['Id']
+                    item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'VideoID: ' + item['Id']
                 except (KeyError):
                     item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
@@ -729,9 +729,9 @@ def get_items(server_url, user_key, auth_key):
                (not itemIsWhiteListed)
                ):
                 try:
-                    item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' -  Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrailerID: ' + item['Id']
+                    item_details=' ' + item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' -  Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrailerID: ' + item['Id']
                 except (KeyError):
-                    item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
+                    item_details=' ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
                         #DEBUG
                         print('\nError encountered - Delete Trailer: \n' + str(item))
@@ -739,9 +739,9 @@ def get_items(server_url, user_key, auth_key):
                 deleteItems.append(item)
             else:
                 try:
-                    item_details=item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrailerID: ' + item['Id']
+                    item_details=' ' + item['Type'] + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrailerID: ' + item['Id']
                 except (KeyError):
-                    item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
+                    item_details=' ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
                         #DEBUG
                         print('\nError encountered - Keep Trailer: \n' + str(item))
@@ -759,7 +759,7 @@ def get_items(server_url, user_key, auth_key):
                (not itemIsWhiteListed)
                ):
                 try:
-                    item_details=item['Type'] + ' - ' + item['Name'] + ' - Album: ' + item['Album'] + ' - Artist: ' + item['Artists'][0] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' -  Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrackID: ' + item['Id']
+                    item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - Album: ' + item['Album'] + ' - Artist: ' + item['Artists'][0] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' -  Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrackID: ' + item['Id']
                 except (KeyError):
                     item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
@@ -769,7 +769,7 @@ def get_items(server_url, user_key, auth_key):
                 deleteItems.append(item)
             else:
                 try:
-                    item_details=item['Type'] + ' - ' + item['Name'] + ' - Album: ' + item['Album'] + ' - Artist: ' + item['Artists'][0] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrackID: ' + item['Id']
+                    item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - Album: ' + item['Album'] + ' - Artist: ' + item['Artists'][0] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrackID: ' + item['Id']
                 except (KeyError):
                     item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
