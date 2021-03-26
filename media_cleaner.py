@@ -568,7 +568,7 @@ def get_iswhitelisted(itemPath):
                 if bool(cfg.DEBUG):
                     #DEBUG
                     print('whitelist folder comparison')
-                    print(path + ' : ' itemPath)
+                    print(path + ' : ' + itemPath)
 
                 return(item_is_whitelisted)
             else:
