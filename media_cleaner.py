@@ -167,7 +167,7 @@ def generate_config():
 
     config_file=''
     config_file += "#----------------------------------------------------------#\n"
-    config_file += "# 0-365000000 - Delete media type once it has been watched x days ago\n"
+    config_file += "# 0-365000000 - Delete media type once it has been played x days ago\n"
     config_file += "# -1 : to disable managing specified media type\n"
     config_file += "# (-1 : default)\n"
     config_file += "# Audio media is a work in progress...\n"
@@ -234,18 +234,18 @@ def generate_config():
     os.chdir(cwd)
 
     print('\n\n-----------------------------------------------------------')
-    print('Config file is not setup to manage media types.')
+    print('Config file is not setup to find played media.')
     print('-----------------------------------------------------------')
-    print('To manage media types open media_cleaner_config.py in a text editor:')
+    print('To find played media open media_cleaner_config.py in a text editor:')
     print('    Set \'not_played_age_movie\' to zero or a positive number')
     print('    Set \'not_played_age_episode\' to zero or a positive number')
     print('    Set \'not_played_age_video\' to zero or a positive number')
     print('    Set \'not_played_age_trailer\' to zero or a positive number')
     print('    Set \'not_played_age_audio\' to zero or a positive number')
     print('-----------------------------------------------------------')
-    print('Config file is in dry run mode to prevent deleting media types.')
+    print('Config file is in dry run mode to prevent deleting media.')
     print('-----------------------------------------------------------')
-    print('To delete media types open media_cleaner_config.py in a text editor:')
+    print('To delete media open media_cleaner_config.py in a text editor:')
     print('    Set \'remove_files=1\' in media_cleaner_config.py')
     print('-----------------------------------------------------------')
     print('Edit the config file and try running again.')
@@ -298,7 +298,7 @@ def get_auth_key(server_url, username, password):
 
 
 #api call to get all user accounts
-#then choose account this script will use to delete watched media
+#then choose account this script will use to delete played media
 #choosen account does NOT need to have "Allow Media Deletion From" enabled
 def list_users(server_url, auth_key):
     #Get all users
@@ -431,7 +431,7 @@ def list_library_folders(server_url, auth_key):
         return(whitelistpaths)
 
 
-#Get count of days since last watched
+#Get count of days since last played
 def get_days_since_played(date_last_played):
     #Get current time
     date_time_now = datetime.utcnow()
@@ -578,7 +578,7 @@ def get_iswhitelisted(itemPath):
     return(item_is_whitelisted)
 
 
-#get watched media items; track media items ready to be deleted
+#get played media items; track media items ready to be deleted
 def get_items(server_url, user_key, auth_key):
     #Get list of all played items
     print('')
@@ -588,7 +588,7 @@ def get_items(server_url, user_key, auth_key):
     print('-----------------------------------------------------------')
     print('\n')
     print('-----------------------------------------------------------')
-    print('Get List Of Watched Media:')
+    print('Get List Of Played Media:')
     print('-----------------------------------------------------------')
 
     url=server_url + '/Users/' + user_key  + '/Items?Recursive=true&IsPlayed=true&SortBy=Type,SeriesName,ParentIndexNumber,IndexNumber,Name&SortOrder=Ascending&api_key=' + auth_key
@@ -779,7 +779,7 @@ def get_items(server_url, user_key, auth_key):
                 print(':[KEEPING] - ' + item_details)
 
     if len(data['Items']) <= 0:
-        print('[NO WATCHED ITEMS]')
+        print('[NO PLAYED ITEMS]')
 
     if bool(cfg.DEBUG):
         print('-----------------------------------------------------------')
@@ -796,7 +796,7 @@ def get_items(server_url, user_key, auth_key):
     return(deleteItems)
 
 
-#list and delete items past watched threshold
+#list and delete items past played threshold
 def list_delete_items(deleteItems):
     #List items to be deleted
     print('-----------------------------------------------------------')
