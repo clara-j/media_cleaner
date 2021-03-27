@@ -623,11 +623,12 @@ def get_items(server_url, user_key, auth_key):
 
     #Determine if media item is to be deleted or kept
     for item in data['Items']:
+        #Get if media item is whitelisted
+        item_info=get_additional_item_info(server_url, user_key, item['Id'], auth_key)
+        itemIsWhiteListed=get_iswhitelisted(item_info['Path'])
+
         #find movie media items ready to delete
         if (item['Type'] == 'Movie'):
-            #Get if media item is whitelisted
-            item_info=get_additional_item_info(server_url, user_key, item['Id'], auth_key)
-            itemIsWhiteListed=get_iswhitelisted(item_info['Path'])
             if (
                (cfg.not_played_age_movie >= 0) and
                (item['UserData']['PlayCount'] >= 1) and
@@ -657,9 +658,6 @@ def get_items(server_url, user_key, auth_key):
         elif (item['Type'] == 'Episode'):
             #Get if episode, season, or series is set as favorite
             itemisfav_TVess=get_isfav_TVess(isfav_TVess, item, server_url, user_key, auth_key)
-            #Get if media item is whiteliested
-            item_info=get_additional_item_info(server_url, user_key, item['Id'], auth_key)
-            itemIsWhiteListed=get_iswhitelisted(item_info['Path'])
             if (
                (cfg.not_played_age_episode >= 0) and
                (item['UserData']['PlayCount'] >= 1) and
@@ -687,9 +685,6 @@ def get_items(server_url, user_key, auth_key):
                 print(':[KEEPING] - ' + item_details)
         #find video media items ready to delete
         elif (item['Type'] == 'Video'):
-            #Get if media item is whiteliested
-            item_info=get_additional_item_info(server_url, user_key, item['Id'], auth_key)
-            itemIsWhiteListed=get_iswhitelisted(item_info['Path'])
             if (
                (item['Type'] == 'Video') and
                (cfg.not_played_age_video >= 0) and
@@ -718,9 +713,6 @@ def get_items(server_url, user_key, auth_key):
                 print(':[KEEPING] - ' + item_details)
         #find trailer media items ready to delete
         elif (item['Type'] == 'Trailer'):
-            #Get if media item is whiteliested
-            item_info=get_additional_item_info(server_url, user_key, item['Id'], auth_key)
-            itemIsWhiteListed=get_iswhitelisted(item_info['Path'])
             if (
                (cfg.not_played_age_trailer >= 0) and
                (item['UserData']['PlayCount'] >= 1) and
@@ -748,9 +740,6 @@ def get_items(server_url, user_key, auth_key):
                 print(':[KEEPING] - ' + item_details)
         #find audio media items ready to delete
         elif (item['Type'] == 'Audio'):
-            #Get if media item is whiteliested
-            item_info=get_additional_item_info(server_url, user_key, item['Id'], auth_key)
-            itemIsWhiteListed=get_iswhitelisted(item_info['Path'])
             if (
                (cfg.not_played_age_audio >= 0) and
                (item['UserData']['PlayCount'] >= 1) and
