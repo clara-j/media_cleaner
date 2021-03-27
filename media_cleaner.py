@@ -858,6 +858,9 @@ def list_delete_items(deleteItems):
 
 #Check select config variables are an expected value
 def cfgVarValCheck():
+
+    errorfound=False
+    error_found_in_media_cleaner_config_py=''
     #need to find clean way to put cfg.variable_names in a dict/list/etc... and use the dict/list/etc... to call the varibles by name in a for loop
     test=cfg.not_played_age_movie
     if (
@@ -865,7 +868,8 @@ def cfgVarValCheck():
         (test >= -1) and
         (test <= 365000000))
        ):
-        raise TypeError('not_played_age_movie must be an integer; valid range -1 thru 365000000')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='not_played_age_movie must be an integer; valid range -1 thru 365000000\n'
 
     test=cfg.not_played_age_episode
     if (
@@ -873,7 +877,8 @@ def cfgVarValCheck():
         (test >= -1) and
         (test <= 365000000))
        ):
-        raise TypeError('not_played_age_episode must be an integer; valid range -1 thru 365000000')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: not_played_age_episode must be an integer; valid range -1 thru 365000000\n'
 
     test=cfg.not_played_age_video
     if (
@@ -881,7 +886,8 @@ def cfgVarValCheck():
         (test >= -1) and
         (test <= 365000000))
        ):
-        raise TypeError('not_played_age_video must be an integer; valid range -1 thru 365000000')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: not_played_age_video must be an integer; valid range -1 thru 365000000\n'
 
     test=cfg.not_played_age_trailer
     if (
@@ -889,7 +895,8 @@ def cfgVarValCheck():
         (test >= -1) and
         (test <= 365000000))
        ):
-        raise TypeError('not_played_age_trailer must be an integer; valid range -1 thru 365000000')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: not_played_age_trailer must be an integer; valid range -1 thru 365000000\n'
 
     test=cfg.not_played_age_audio
     if (
@@ -897,7 +904,8 @@ def cfgVarValCheck():
         (test >= -1) and
         (test <= 365000000))
        ):
-        raise TypeError('not_played_age_audio must be an integer; valid range -1 thru 365000000')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: not_played_age_audio must be an integer; valid range -1 thru 365000000\n'
 
     test=cfg.keep_favorites_movie
     if (
@@ -905,7 +913,8 @@ def cfgVarValCheck():
         (test >= 0) and
         (test <= 1))
        ):
-        raise TypeError('keep_favorites_movie must be an integer; valid values 0 and 1')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: keep_favorites_movie must be an integer; valid values 0 and 1\n'
 
     test=cfg.keep_favorites_episode
     if (
@@ -913,7 +922,8 @@ def cfgVarValCheck():
         (test >= 0) and
         (test <= 1))
        ):
-        raise TypeError('keep_favorites_episode must be an integer; valid values 0 and 1')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: keep_favorites_episode must be an integer; valid values 0 and 1\n'
 
     test=cfg.keep_favorites_video
     if (
@@ -921,7 +931,8 @@ def cfgVarValCheck():
         (test >= 0) and
         (test <= 1))
        ):
-        raise TypeError('keep_favorites_video must be an integer; valid values 0 and 1')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: keep_favorites_video must be an integer; valid values 0 and 1\n'
 
     test=cfg.keep_favorites_trailer
     if (
@@ -929,7 +940,8 @@ def cfgVarValCheck():
         (test >= 0) and
         (test <= 1))
        ):
-        raise TypeError('keep_favorites_trailer must be an integer; valid values 0 and 1')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: keep_favorites_trailer must be an integer; valid values 0 and 1\n'
 
     test=cfg.keep_favorites_audio
     if (
@@ -937,13 +949,15 @@ def cfgVarValCheck():
         (test >= 0) and
         (test <= 1))
        ):
-        raise TypeError('keep_favorites_audio must be an integer; valid values 0 and 1')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: keep_favorites_audio must be an integer; valid values 0 and 1\n'
 
     test=cfg.whitelisted_library_folders
     if (
         not (type(test) is str)
        ):
-        raise TypeError('whitelisted_library_folders must be a string')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: whitelisted_library_folders must be a string\n'
 
     test=cfg.remove_files
     if (
@@ -951,37 +965,43 @@ def cfgVarValCheck():
         (test >= 0) and
         (test <= 1))
        ):
-        raise TypeError('remove_files must be an integer; valid values 0 and 1')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: remove_files must be an integer; valid values 0 and 1\n'
 
     test=cfg.server_brand
     if (
         not (type(test) is str)
        ):
-        raise TypeError('server_brand must be a string')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: server_brand must be a string\n'
 
     test=cfg.server_url
     if (
         not (type(test) is str)
        ):
-        raise TypeError('server_url must be a string')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: server_url must be a string\n'
 
     test=cfg.admin_username
     if (
         not (type(test) is str)
        ):
-        raise TypeError('admin_username must be a string')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: admin_username must be a string\n'
 
     test=cfg.access_token
     if (
         not (type(test) is str)
        ):
-        raise TypeError('access_token must be a string')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: access_token must be a string\n'
 
     test=cfg.user_key
     if (
         not (type(test) is str)
        ):
-        raise TypeError('user_key must be a string')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: user_key must be a string\n'
 
     test=cfg.DEBUG
     if (
@@ -989,7 +1009,11 @@ def cfgVarValCheck():
         (test >= 0) and
         (test <= 1))
        ):
-        raise TypeError('DEBUG must be an integer; valid values 0 and 1')
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: DEBUG must be an integer; valid values 0 and 1'
+
+    if (errorfound):
+        raise TypeError(error_found_in_media_cleaner_config_py)
 
 ############# START OF SCRIPT #############
 
