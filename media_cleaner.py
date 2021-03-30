@@ -123,7 +123,7 @@ def get_admin_password():
     return(password)
 
 
-#used of hashed password to be removed in future
+#use of hashed password removed
 #hash admin password
 #def get_admin_password_sha1(password):
 #    #password_sha1=password #input('Enter admin password (password will be hashed in config file): ')
@@ -167,10 +167,10 @@ def generate_config():
 
     config_file=''
     config_file += "#----------------------------------------------------------#\n"
-    config_file += "# 0-365000000 - Delete media type once it has been played x days ago\n"
-    config_file += "# -1 : to disable managing specified media type\n"
+    config_file += "# Delete media type once it has been played x days ago\n"
+    config_file += "#   0-365000000 - number of days to wait before deleting played media\n"
+    config_file += "#  -1 : to disable managing specified media type\n"
     config_file += "# (-1 : default)\n"
-    config_file += "# Audio media is a work in progress...\n"
     config_file += "#----------------------------------------------------------#\n"
     config_file += "not_played_age_movie=" + not_played_age_movie + "\n"
     config_file += "not_played_age_episode=" + not_played_age_episode + "\n"
@@ -183,10 +183,10 @@ def generate_config():
     config_file += "#----------------------------------------------------------#\n"
     config_file += "# Favoriting a series or season will treat all child episodes as if they are favorites\n"
     config_file += "# Favoriting an artist, album-artist, or album will treat all child tracks as if they are favorites\n"
-    config_file += "# 0 - Ok to delete movie played not_played_age_movie=x days ago\n"
-    config_file += "# 1 - Do no delete movie played not_played_age_movie=x days ago\n"
+    config_file += "#  0 : ok to delete movie played not_played_age_movie=x days ago\n"
+    config_file += "#  1 : do no delete movie played not_played_age_movie=x days ago\n"
+    config_file += "# (1 : default)\n"
     config_file += "# Same applies for other media types (episodes, trailers, etc...)\n"
-    config_file += "# (1 - default)\n"
     config_file += "#----------------------------------------------------------#\n"
     config_file += "keep_favorites_movie=1\n"
     config_file += "keep_favorites_episode=1\n"
@@ -194,6 +194,36 @@ def generate_config():
     config_file += "keep_favorites_trailer=1\n"
     config_file += "keep_favorites_audio=1\n"
     #config_file += "keep_favorites_tvchannel=1\n"
+    #config_file += "#----------------------------------------------------------#\n"
+    config_file += "\n"
+    config_file += "#----------------------------------------------------------#\n"
+    config_file += "# Advanced audio favorites configuration bitmask\n"
+    config_file += "#     Requires 'keep_favorites_audio=1'\n"
+    config_file += "#  xxxxA - keep audio tracks based on if the FIRST artist listed in the track's 'artist' metadata is favorited\n"
+    config_file += "#  xxxBx - keep audio tracks based on if the FIRST artist listed in the tracks's 'album artist' metadata is favorited\n"
+    config_file += "#  xxCxx - genre work in progress...\n"
+    config_file += "#  xDxxx - genre work in progress...\n"
+    config_file += "#  Exxxx - genre work in progress...\n"
+    config_file += "#  0 bit - disabled\n"
+    config_file += "#  1 bit - enabled\n"
+    config_file += "# (00001 - default)\n"
+    config_file += "#----------------------------------------------------------#\n"
+    config_file += "keep_favorites_audio_advanced='00001'\n"
+    #config_file += "#----------------------------------------------------------#\n"
+    config_file += "\n"
+    config_file += "#----------------------------------------------------------#\n"
+    config_file += "# Advanced audio favorites any configuration bitmask\n"
+    config_file += "#     Requires matching bit in 'keep_favorites_audio_advanced' bitmask is enabled\n"
+    config_file += "#  xxxxa - xxxxA must be enabled above; will use ANY artists listed in the track's 'artist' metadata\n"
+    config_file += "#  xxxbx - xxxBx must be enabled above; will use ANY artists listed in the track's 'album artist' metadata\n"
+    config_file += "#  xxcxx - genre work in progress...\n"
+    config_file += "#  xdxxx - genre work in progress...\n"
+    config_file += "#  exxxx - genre work in progress...\n"
+    config_file += "#  0 bit - disabled\n"
+    config_file += "#  1 bit - enabled\n"
+    config_file += "# (00000 - default)\n"
+    config_file += "#----------------------------------------------------------#\n"
+    config_file += "keep_favorites_audio_advanced_any='00000'\n"
     #config_file += "#----------------------------------------------------------#\n"
     config_file += "\n"
     config_file += "#----------------------------------------------------------#\n"
@@ -279,7 +309,7 @@ def get_auth_key(server_url, username, password):
     DATA = convert2json(values)
     DATA = DATA.encode('utf-8')
 
-    headers = {'X-Emby-Authorization' : 'Emby UserId="'+ username  +'", Client="media_cleaner", Device="media_cleaner", DeviceId="media_cleaner", Version="0.3", Token=""', 'Content-Type' : 'application/json'}
+    headers = {'X-Emby-Authorization' : 'Emby UserId="'+ username  +'", Client="media_cleaner", Device="media_cleaner", DeviceId="media_cleaner", Version="0.4", Token=""', 'Content-Type' : 'application/json'}
 
     req = request.Request(url=server_url + '/Users/AuthenticateByName', data=DATA, method='POST', headers=headers)
 
@@ -511,12 +541,128 @@ def get_additional_item_info(server_url, user_key, itemId, auth_key):
     return(itemInfo)
 
 
-#determine if track, album or artist is set to favorite
-#def get_isfav_MUSICtaa(isfav_MUSICtaa, item, server_url, user_key, auth_key):
-    #work in progress
+#determinne if track genre, album genre, or artist genre are set to favorite
+def get_isfav_MUSICgentaa(isfav_MUSICgentaa, item, server_url, user_key, auth_key):
+    #Work In Progress...
 
+    #Set bitmasks
+    adv_settings=int(cfg.keep_favorites_audio_advanced, 2)
+    adv_all=int(cfg.keep_favorites_audio_advanced_any, 2)
+    trackgenre_mask=int('00100', 2)
+    albumgenre_mask=int('01000', 2)
+    artistgenre_mask=int('10000', 2)
+    trackgenre_any_mask=trackgenre
+    albumgenre_any_mask=albumgenre
+    artistgenre_any_mask=artistgenre
 
-#determine if episode, season, or series is set to favorite
+    return()
+
+#determine if track, album, or artist are set to favorite
+def get_isfav_MUSICtaa(isfav_MUSICtaa, item, server_url, user_key, auth_key):
+    #Set bitmasks
+    adv_settings=int(cfg.keep_favorites_audio_advanced, 2)
+    adv_all=int(cfg.keep_favorites_audio_advanced_any, 2)
+    trackartist_mask=int('00001', 2)
+    albumartist_mask=int('00010', 2)
+    trackartist_any_mask=trackartist_mask
+    albumartist_any_mask=albumartist_mask
+
+    item_info = get_additional_item_info(server_url, user_key, item['Id'], auth_key)
+    #Check if track's favorite value already exists in dictionary
+    if not item['Id'] in isfav_MUSICtaa['track']:
+        #Store if this track is marked as a favorite
+        isfav_MUSICtaa['track'][item['Id']] = item_info['UserData']['IsFavorite']
+
+    item_info = get_additional_item_info(server_url, user_key, item['AlbumId'], auth_key)
+    #Check if album's favorite value already exists in dictionary
+    if not item['AlbumId'] in isfav_MUSICtaa['album']:
+        #Store if the album is marked as a favorite
+        isfav_MUSICtaa['album'][item['AlbumId']] = item_info['UserData']['IsFavorite']
+
+    #Check if bitmask for favorites by track artist is enabled
+    if (adv_settings & trackartist_mask):
+        #Check if bitmask for any or first track artist is enabled
+        if not (adv_all & trackartist_any_mask):
+            item_info = get_additional_item_info(server_url, user_key, item['ArtistItems'][0]['Id'], auth_key)
+            #Check if artist's favorite value already exists in dictionary
+            if not item['ArtistItems'][0]['Id'] in isfav_MUSICtaa['artist']:
+                #Store if first track artist is marked as favorite
+                isfav_MUSICtaa['artist'][item['ArtistItems'][0]['Id']] = item_info['UserData']['IsFavorite']
+        else:
+            for artist in range(len(item['ArtistItems'])):
+                item_info = get_additional_item_info(server_url, user_key, item['ArtistItems'][artist]['Id'], auth_key)
+                #Check if artist's favorite value already exists in dictionary
+                if not item['ArtistItems'][artist]['Id'] in isfav_MUSICtaa['artist']:
+                    #Store if any track artist is marked as a favorite
+                    isfav_MUSICtaa['artist'][item['ArtistItems'][artist]['Id']] = item_info['UserData']['IsFavorite']
+
+    #Check if bitmask for favotires by album artist is enabled
+    if (adv_settings & albumartist_mask):
+        #Check if bitmask for any or first album artist is enabled
+        if not (adv_all & albumartist_any_mask):
+            item_info = get_additional_item_info(server_url, user_key, item['AlbumArtists'][0]['Id'], auth_key)
+            #Check if artist's favorite value already exists in dictionary
+            if not item['AlbumArtists'][0]['Id'] in isfav_MUSICtaa['artist']:
+                #Store if first album artist is marked as favorite
+                isfav_MUSICtaa['artist'][item['AlbumArtists'][0]['Id']] = item_info['UserData']['IsFavorite']
+        else:
+            for albumartist in range(len(item['AlbumArtists'])):
+                item_info = get_additional_item_info(server_url, user_key, item['AlbumArtists'][albumartist]['Id'], auth_key)
+                #Check if artist's favorite value already exists in dictionary
+                if not item['AlbumArtists'][albumartist]['Id'] in isfav_MUSICtaa['artist']:
+                    #Store if any album artist is marked as a favorite
+                    isfav_MUSICtaa['artist'][item['AlbumArtists'][albumartist]['Id']] = item_info['UserData']['IsFavorite']
+
+    if bool(cfg.DEBUG):
+        #DEBUG
+        print('-----------------------------------------------------------')
+        print('  Track is favorite: ' + str(isfav_MUSICtaa['track'][item['Id']]))
+        print('  Album is favorite: ' + str(isfav_MUSICtaa['album'][item['AlbumId']]))
+        if (adv_settings & trackartist_mask):
+            for artist in range(len(item['ArtistItems'])):
+                print('  ' + item['ArtistItems'][artist]['Name'] + ' is favorite: ' + str(isfav_MUSICtaa['artist'][item['ArtistItems'][artist]['Id']]))
+        if (adv_settings & albumartist_mask):
+            for albumartist in range(len(item['AlbumArtists'])):
+                print('  ' + item['AlbumArtists'][artist]['Name'] + ' is favorite: ' + str(isfav_MUSICtaa['artist'][item['AlbumArtists'][albumartist]['Id']]))
+
+    #Check if track or album was stored as a favorite
+    itemisfav_MUSICtrackalbum=False
+    if (
+       (isfav_MUSICtaa['track'][item['Id']]) or
+       (isfav_MUSICtaa['album'][item['AlbumId']])
+       ):
+        #Either the track or album was stored as a favorite
+        itemisfav_MUSICtrackalbum=True
+
+    #Check if track artist was stored as a favorite
+    itemisfav_MUSICartist=False
+    if (adv_settings & trackartist_mask):
+        #Check if any track artist was stored as a favorite
+        for artist in range(len(item['ArtistItems'])):
+            if (isfav_MUSICtaa['artist'][item['ArtistItems'][artist]['Id']]):
+                itemisfav_MUSICartist=True
+
+    #Check if album artist was stored as a favorite
+    itemisfav_MUSICalbumartist=False
+    if (adv_settings & albumartist_mask):
+        #Check if any album artist was stored as a favorite
+        for albumartist in range(len(item['AlbumArtists'])):
+            if (isfav_MUSICtaa['artist'][item['AlbumArtists'][albumartist]['Id']]):
+                itemisfav_MUSICalubmartist=True
+
+    #Check if track, album, or artist are a favorite
+    itemisfav_MUSICtaa=False
+    if (
+       (itemisfav_MUSICtrackalbum) or
+       (itemisfav_MUSICartist) or
+       (itemisfav_MUSICalbumartist)
+       ):
+        #Either the track, album, or artist(s) are set as a favorite
+        itemisfav_MUSICtaa=True
+
+    return(itemisfav_MUSICtaa)
+
+#determine if episode, season, or series are set to favorite
 def get_isfav_TVess(isfav_TVess, item, server_url, user_key, auth_key):
     #Check if episode's favorite value already exists in dictionary
     if not item['Id'] in isfav_TVess['episode']:
@@ -537,17 +683,15 @@ def get_isfav_TVess(isfav_TVess, item, server_url, user_key, auth_key):
         print(' Season is favorite: ' + str(isfav_TVess['season'][item['SeasonId']]))
         print(' Series is favorite: ' + str(isfav_TVess['series'][item['SeriesId']]))
 
-    #Check if episode, season, or series is a favorite
+    #Check if episode, season, or series are a favorite
+    itemisfav_TVess=False
     if (
        (isfav_TVess['episode'][item['Id']]) or
        (isfav_TVess['season'][item['SeasonId']]) or
        (isfav_TVess['series'][item['SeriesId']]) #or
        ):
-        #Either the episode, season, or series is set as a favorite
+        #Either the episode, season, or series are set as a favorite
         itemisfav_TVess=True
-    else:
-        #Neither the episode, season, or series is set as a favorite
-        itemisfav_TVess=False
 
     return(itemisfav_TVess)
 
@@ -558,8 +702,8 @@ def get_iswhitelisted(itemPath):
     whitelist=cfg.whitelisted_library_folders
     whitelistentries=whitelist.split(',')
 
-    item_is_whitelisted=False
     #determine if media item's path matches one of the whitelist folders
+    item_is_whitelisted=False
     for path in whitelistentries:
         if not (path == ''):
             if (itemPath.startswith(path)):
@@ -618,17 +762,18 @@ def get_items(server_url, user_key, auth_key):
 
     #define empty dictionary for favorited TV Series', Seasons, and Episodes
     isfav_TVess={'episode':{},'season':{},'series':{}}
-    #define empty dictionary for favorited Artists', Albums, and Audio-Tracks
+    #define empty dictionary for favorited Tracks, Albums, Artists
     isfav_MUSICtaa={'track':{},'album':{},'artist':{}}
+    #define empty dictionary for favorited Track Genres, Album Genres, Artist Genres
+    isfav_MUSICgentaa={'genres_track':{},'genres_album':{},'genres_artist':{}} #Work In Progress...
 
     #Determine if media item is to be deleted or kept
     for item in data['Items']:
-        #Get if media item is whitelisted
-        item_info=get_additional_item_info(server_url, user_key, item['Id'], auth_key)
-        itemIsWhiteListed=get_iswhitelisted(item_info['Path'])
-
         #find movie media items ready to delete
-        if (item['Type'] == 'Movie'):
+        if ((item['Type'] == 'Movie') and not (cfg.not_played_age_movie == -1)):
+            #Get if media item is whitelisted
+            item_info=get_additional_item_info(server_url, user_key, item['Id'], auth_key)
+            itemIsWhiteListed=get_iswhitelisted(item_info['Path'])
             if (
                (cfg.not_played_age_movie >= 0) and
                (item['UserData']['PlayCount'] >= 1) and
@@ -655,9 +800,12 @@ def get_items(server_url, user_key, auth_key):
                         print('\nError encountered - Keep Movie: \n' + str(item))
                 print(':[KEEPING] - ' + item_details)
         #find tv-episode media items ready to delete
-        elif (item['Type'] == 'Episode'):
+        elif ((item['Type'] == 'Episode') and not (cfg.not_played_age_episode == -1)):
             #Get if episode, season, or series is set as favorite
             itemisfav_TVess=get_isfav_TVess(isfav_TVess, item, server_url, user_key, auth_key)
+            #Get if media item is whitelisted
+            item_info=get_additional_item_info(server_url, user_key, item['Id'], auth_key)
+            itemIsWhiteListed=get_iswhitelisted(item_info['Path'])
             if (
                (cfg.not_played_age_episode >= 0) and
                (item['UserData']['PlayCount'] >= 1) and
@@ -684,7 +832,10 @@ def get_items(server_url, user_key, auth_key):
                         print('\nError encountered - Keep Episode: \n' + str(item))
                 print(':[KEEPING] - ' + item_details)
         #find video media items ready to delete
-        elif (item['Type'] == 'Video'):
+        elif ((item['Type'] == 'Video') and not (cfg.not_played_age_video == -1)):
+            #Get if media item is whitelisted
+            item_info=get_additional_item_info(server_url, user_key, item['Id'], auth_key)
+            itemIsWhiteListed=get_iswhitelisted(item_info['Path'])
             if (
                (item['Type'] == 'Video') and
                (cfg.not_played_age_video >= 0) and
@@ -712,7 +863,10 @@ def get_items(server_url, user_key, auth_key):
                         print('\nError encountered - Keep Video: \n' + str(item))
                 print(':[KEEPING] - ' + item_details)
         #find trailer media items ready to delete
-        elif (item['Type'] == 'Trailer'):
+        elif ((item['Type'] == 'Trailer') and not (cfg.not_played_age_trailer == -1)):
+            #Get if media item is whitelisted
+            item_info=get_additional_item_info(server_url, user_key, item['Id'], auth_key)
+            itemIsWhiteListed=get_iswhitelisted(item_info['Path'])
             if (
                (cfg.not_played_age_trailer >= 0) and
                (item['UserData']['PlayCount'] >= 1) and
@@ -739,18 +893,23 @@ def get_items(server_url, user_key, auth_key):
                         print('\nError encountered - Keep Trailer: \n' + str(item))
                 print(':[KEEPING] - ' + item_details)
         #find audio media items ready to delete
-        elif (item['Type'] == 'Audio'):
+        elif ((item['Type'] == 'Audio') and not (cfg.not_played_age_audio == -1)):
+            #Get if track, album, or artist is set as favorite
+            itemisfav_MUSICtaa=get_isfav_MUSICtaa(isfav_MUSICtaa, item, server_url, user_key, auth_key)
+            #Get if media item is whitelisted
+            item_info=get_additional_item_info(server_url, user_key, item['Id'], auth_key)
+            itemIsWhiteListed=get_iswhitelisted(item_info['Path'])
             if (
                (cfg.not_played_age_audio >= 0) and
                (item['UserData']['PlayCount'] >= 1) and
                (cut_off_date_audio > parse(item['UserData']['LastPlayedDate'])) and
-               (not bool(cfg.keep_favorites_audio) or not item['UserData']['IsFavorite']) and
+               (not bool(cfg.keep_favorites_audio) or (not itemisfav_MUSICtaa)) and
                (not itemIsWhiteListed)
                ):
                 try:
-                    item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - Album: ' + item['Album'] + ' - Artist: ' + item['Artists'][0] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' -  Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrackID: ' + item['Id']
+                    item_details='  ' + item['Type'] + ' - Track: ' + item['Name'] + ' - Album: ' + item['Album'] + ' - Artist: ' + item['Artists'][0] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' -  Favorite: ' + str(itemisfav_MUSICtaa) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrackID: ' + item['Id']
                 except (KeyError):
-                    item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
+                    item_details='  ' + item['Type'] + ' - Track: ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
                         #DEBUG
                         print('\nError encountered - Delete Audio: \n' + str(item))
@@ -758,9 +917,9 @@ def get_items(server_url, user_key, auth_key):
                 deleteItems.append(item)
             else:
                 try:
-                    item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - Album: ' + item['Album'] + ' - Artist: ' + item['Artists'][0] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(item['UserData']['IsFavorite']) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrackID: ' + item['Id']
+                    item_details='  ' + item['Type'] + ' - Track: ' + item['Name'] + ' - Album: ' + item['Album'] + ' - Artist: ' + item['Artists'][0] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(itemisfav_MUSICtaa) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'TrackID: ' + item['Id']
                 except (KeyError):
-                    item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
+                    item_details='  ' + item['Type'] + ' - Track: ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
                         #DEBUG
                         print('\nError encountered - Keep Audio: \n' + str(item))
@@ -846,7 +1005,7 @@ def list_delete_items(deleteItems):
 
 
 #Check select config variables are an expected value
-def cfgVarValCheck():
+def cfgCheck():
 
     errorfound=False
     error_found_in_media_cleaner_config_py=''
@@ -941,6 +1100,26 @@ def cfgVarValCheck():
         errorfound=True
         error_found_in_media_cleaner_config_py+='TypeError: keep_favorites_audio must be an integer; valid values 0 and 1\n'
 
+    test=cfg.keep_favorites_audio_advanced
+    if (
+        not ((type(test) is str) and
+        (int(test, 2) >= 0) and
+        (int(test, 2) <= 31) and
+        (len(test) == 5))
+       ):
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: keep_favorites_audio_advanced must be a 5-digit binary string; valid range binary - 00000 thru 11111 (decimal - 0 thru 31)\n'
+
+    test=cfg.keep_favorites_audio_advanced_any
+    if (
+        not ((type(test) is str) and
+        (int(test, 2) >= 0) and
+        (int(test, 2) <= 31) and
+        (len(test) == 5))
+       ):
+        errorfound=True
+        error_found_in_media_cleaner_config_py+='TypeError: keep_favorites_audio_advanced_any must be a 5-digit binary string; valid range binary - 00000 thru 11111 (decimal - 0 thru 31)\n'
+
     test=cfg.whitelisted_library_folders
     if (
         not (type(test) is str)
@@ -1027,6 +1206,8 @@ try:
         not hasattr(cfg, 'keep_favorites_video') or
         not hasattr(cfg, 'keep_favorites_trailer') or
         not hasattr(cfg, 'keep_favorites_audio') or
+        not hasattr(cfg, 'keep_favorites_audio_advanced') or
+        not hasattr(cfg, 'keep_favorites_audio_advanced_any') or
         not hasattr(cfg, 'remove_files') or
         not hasattr(cfg, 'whitelisted_library_folders') or
         not hasattr(cfg, 'server_brand') or
@@ -1130,6 +1311,12 @@ try:
         if not hasattr(cfg, 'keep_favorites_audio'):
             print('keep_favorites_audio=1')
             setattr(cfg, 'keep_favorites_audio', 1)
+        if not hasattr(cfg, 'keep_favorites_audio_advanced'):
+            print('keep_favorites_audio_advanced=00001')
+            setattr(cfg, 'keep_favorites_audio_advanced', '00001')
+        if not hasattr(cfg, 'keep_favorites_audio_advanced_any'):
+            print('keep_favorites_audio_advanced_any=00000')
+            setattr(cfg, 'keep_favorites_audio_advanced_any', '00000')
 
         if not hasattr(cfg, 'whitelisted_library_folders'):
             print('whitelisted_library_folders=\'\'')
@@ -1173,7 +1360,7 @@ except (AttributeError, ModuleNotFoundError):
     exit(0)
 
 #check config values are what we expect them to be
-cfgVarValCheck()
+cfgCheck()
 #find media items to be deleted
 deleteItems=get_items(cfg.server_url, cfg.user_key, cfg.access_token)
 #list and delete found media items
