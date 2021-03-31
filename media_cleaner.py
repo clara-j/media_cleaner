@@ -242,6 +242,16 @@ def generate_config():
     #config_file += "#----------------------------------------------------------#\n"
     config_file += "\n"
     config_file += "#------------DO NOT MODIFY BELOW---------------------------#\n"
+    config_file += "\n"
+    config_file += "#----------------------------------------------------------#\n"
+    config_file += "# Server branding chosen during setup\n"
+    config_file += "#  0 - 'emby'\n"
+    config_file += "#  1 - 'jellyfin'\n"
+    config_file += "# Server URL created during setup\n"
+    config_file += "# Admin username chosen during setup\n"
+    config_file += "# Access token requested from server during setup\n"
+    config_file += "# User key of account to monitor played media chosen during setup\n"
+    config_file += "#----------------------------------------------------------#\n"
     config_file += "server_brand='" + server_brand + "'\n"
     config_file += "server_url='" + server_url + "'\n"
     config_file += "admin_username='" + username + "'\n"
@@ -359,11 +369,11 @@ def list_users(server_url, auth_key):
                 if ((user_number_int >= 0) and (user_number_int < i)):
                     valid_user=True
                 else:
-                    print('\nInvalid number. Try again.\n')
+                    print('\nInvalid value. Try again.\n')
             else:
-                print('\nInvalid number. Try again.\n')
+                print('\nInvalid value. Try again.\n')
         except:
-            print('\nInvalid number. Try again.\n')
+            print('\nInvalid value. Try again.\n')
 
     userID=data[user_number_int]['Id']
     return(userID)
@@ -438,11 +448,11 @@ def list_library_folders(server_url, auth_key):
                         #print('selected library folders')
                         #print(libraryfolders_set)
                     else:
-                        print('\nInvalid number. Try again.\n')
+                        print('\nInvalid value. Try again.\n')
                 else:
-                    print('\nInvalid number. Try again.\n')
+                    print('\nInvalid value. Try again.\n')
         except:
-            print('\nInvalid number. Try again.\n')
+            print('\nInvalid value. Try again.\n')
 
     if (libraryfolders_set == set()):
         return('')
@@ -715,10 +725,7 @@ def get_iswhitelisted(itemPath):
                     print(path + ' : ' + itemPath)
 
                 return(item_is_whitelisted)
-            else:
-                item_is_whitelisted=False
-        else:
-            item_is_whitelisted=False
+
     return(item_is_whitelisted)
 
 
