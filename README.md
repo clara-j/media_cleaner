@@ -100,7 +100,7 @@ remove_files=0
 # User key of account to monitor played media chosen during setup
 #----------------------------------------------------------#
 server_brand='xyz'
-server_url='http://localhost.tld:8096/basename'
+server_url='http://localhost.abc:8096/basename'
 admin_username='Username'
 access_token='0123456789abcdef0123456789abcdef0'
 user_key='abcdef0123456789abcdef0123456789a'
