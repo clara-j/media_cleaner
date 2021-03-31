@@ -5,74 +5,74 @@ This script will go through all played movies, tv episodes, videos, trailers, an
 The first time you run the script it will attempt to create the config file by asking a few questions.
 
 
-#----------------------------------------------------------#
-# Delete media type once it has been played x days ago
-#   0-365000000 - number of days to wait before deleting played media
-#  -1 : to disable managing specified media type
-# (-1 : default)
-#----------------------------------------------------------#
+----------------------------------------------------------
+ Delete media type once it has been played x days ago
+   0-365000000 - number of days to wait before deleting played media
+  -1 : to disable managing specified media type
+ (-1 : default)
+----------------------------------------------------------
 not_played_age_movie=-1
 not_played_age_episode=-1
 not_played_age_video=-1
 not_played_age_trailer=-1
 not_played_age_audio=-1
 
-#----------------------------------------------------------#
-# Favoriting a series or season will treat all child episodes as if they are favorites
-# Favoriting an artist, album-artist, or album will treat all child tracks as if they are favorites
-#  0 : ok to delete movie played not_played_age_movie=x days ago
-#  1 : do no delete movie played not_played_age_movie=x days ago
-# (1 : default)
-# Same applies for other media types (episodes, trailers, etc...)
-#----------------------------------------------------------#
+----------------------------------------------------------
+ Favoriting a series or season will treat all child episodes as if they are favorites
+ Favoriting an artist, album-artist, or album will treat all child tracks as if they are favorites
+  0 : ok to delete movie played not_played_age_movie=x days ago
+  1 : do no delete movie played not_played_age_movie=x days ago
+ (1 : default)
+ Same applies for other media types (episodes, trailers, etc...)
+----------------------------------------------------------
 keep_favorites_movie=1
 keep_favorites_episode=1
 keep_favorites_video=1
 keep_favorites_trailer=1
 keep_favorites_audio=1
 
-#----------------------------------------------------------#
-# Advanced audio favorites configuration bitmask
-#     Requires keep_favorites_audio=1
-#  xxxxA - keep audio tracks based only on the first artist listed in the track's 'artist' metadata is favorited
-#  xxxBx - keep audio tracks based only on the first artist listed in the tracks's 'album artist' metadata is favorited
-#  xxCxx - work In Progress...
-#  xDxxx - work In Progress...
-#  Exxxx - work In Progress...
-#  0 bit - disabled
-#  1 bit - enabled
-# (00001 - default)
-#----------------------------------------------------------#
+----------------------------------------------------------
+ Advanced audio favorites configuration bitmask
+     Requires keep_favorites_audio=1
+  xxxxA - keep audio tracks based only on the first artist listed in the track's 'artist' metadata is favorited
+  xxxBx - keep audio tracks based only on the first artist listed in the tracks's 'album artist' metadata is favorited
+  xxCxx - work In Progress...
+  xDxxx - work In Progress...
+  Exxxx - work In Progress...
+  0 bit - disabled
+  1 bit - enabled
+ (00001 - default)
+----------------------------------------------------------
 keep_favorites_audio_advanced='00001'
 
-#----------------------------------------------------------#
-# Advanced audio favorites all configuration bitmask
-#     Requires matching keep_favorites_audio_advanced bitmask is enabled
-#  xxxxa - xxxxA must be enabled above; will use ALL artists listed in the track's 'artist' metadata
-#  xxxbx - xxxBx must be enabled above; will use ALL artists listed in the track's 'album artist' metadata
-#  xxcxx - work In Progress...
-#  xdxxx - work In Progress...
-#  exxxx - work In Progress...
-#  0 bit - disabled
-#  1 bit - enabled
-# (00000 - default)
-#----------------------------------------------------------#
+----------------------------------------------------------
+ Advanced audio favorites all configuration bitmask
+     Requires matching keep_favorites_audio_advanced bitmask is enabled
+  xxxxa - xxxxA must be enabled above; will use ALL artists listed in the track's 'artist' metadata
+  xxxbx - xxxBx must be enabled above; will use ALL artists listed in the track's 'album artist' metadata
+  xxcxx - work In Progress...
+  xdxxx - work In Progress...
+  exxxx - work In Progress...
+  0 bit - disabled
+  1 bit - enabled
+ (00000 - default)
+----------------------------------------------------------
 keep_favorites_audio_advanced_any='00000'
 
-#----------------------------------------------------------#
-# Whitelisting a library folder will treat all child media as if they are favorites
-# ('' - default)
-#----------------------------------------------------------#
+----------------------------------------------------------
+ Whitelisting a library folder will treat all child media as if they are favorites
+ ('' - default)
+----------------------------------------------------------
 whitelisted_library_folders='/path/to/library/folder0,path/to/libray/folder1,/path/to/library/folderX'
 
-#----------------------------------------------------------#
-# 0 - Disable the ability to delete media (dry run mode)
-# 1 - Enable the ability to delete media
-# (0 - default)
-#----------------------------------------------------------#
+----------------------------------------------------------
+ 0 - Disable the ability to delete media (dry run mode)
+ 1 - Enable the ability to delete media
+ (0 - default)
+----------------------------------------------------------
 remove_files=0
 
-#------------DO NOT MODIFY BELOW---------------------------#
+------------DO NOT MODIFY BELOW---------------------------
 server_brand='emby' - 0:emby or 1:jellyfin
 server_url='http://localhost:8096/basename' - Server name or ip address
 admin_username='Username' - Username for admin account
