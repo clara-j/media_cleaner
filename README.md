@@ -86,7 +86,7 @@ whitelisted_library_folders='smb://hieroglyph/Pharaoh/xbmc/Movies'
 #----------------------------------------------------------#
 remove_files=0
 ```
-#### Created first time the script runs; Do not manually change these unless you know what you are doing:
+#### Created first time the script runs; Do not manually change these:
 ```python
 #------------DO NOT MODIFY BELOW---------------------------#
 
