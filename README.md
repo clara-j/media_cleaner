@@ -1,84 +1,111 @@
-# media_cleaner.py
+# Script
+## media_cleaner.py
 This script will go through all played movies, tv episodes, videos, trailers, and audio for the specified user; deleting any media past the specified played age cut off.
 
-# media_cleaner_config.py
+# Configuration
+## media_cleaner_config.py
 The first time you run the script it will attempt to create the config file by asking a few questions.
 
-
-----------------------------------------------------------
- Delete media type once it has been played x days ago
-   0-365000000 - number of days to wait before deleting played media
-  -1 : to disable managing specified media type
- (-1 : default)
-----------------------------------------------------------
+## Configuration Contents
+#### Media will be deleted once it has been played the number of days ago configured below:
+```python
+#----------------------------------------------------------#
+# Delete media type once it has been played x days ago
+#   0-365000000 - number of days to wait before deleting played media
+#  -1 : to disable managing specified media type
+# (-1 : default)
+#----------------------------------------------------------#
 not_played_age_movie=-1
 not_played_age_episode=-1
 not_played_age_video=-1
 not_played_age_trailer=-1
 not_played_age_audio=-1
-
-----------------------------------------------------------
- Favoriting a series or season will treat all child episodes as if they are favorites
- Favoriting an artist, album-artist, or album will treat all child tracks as if they are favorites
-  0 : ok to delete movie played not_played_age_movie=x days ago
-  1 : do no delete movie played not_played_age_movie=x days ago
- (1 : default)
- Same applies for other media types (episodes, trailers, etc...)
-----------------------------------------------------------
+```
+#### When enabled, media will not be deleted if it is marked as a favorite:
+```python
+#----------------------------------------------------------#
+# Favoriting a series or season will treat all child episodes as if they are favorites
+# Favoriting an artist, album-artist, or album will treat all child tracks as if they are favorites
+#  0 : ok to delete movie played not_played_age_movie=x days ago
+#  1 : do no delete movie played not_played_age_movie=x days ago
+# (1 : default)
+# Same applies for other media types (episodes, trailers, etc...)
+#----------------------------------------------------------#
 keep_favorites_movie=1
 keep_favorites_episode=1
 keep_favorites_video=1
 keep_favorites_trailer=1
 keep_favorites_audio=1
-
-----------------------------------------------------------
- Advanced audio favorites configuration bitmask
-     Requires keep_favorites_audio=1
-  xxxxA - keep audio tracks based only on the first artist listed in the track's 'artist' metadata is favorited
-  xxxBx - keep audio tracks based only on the first artist listed in the tracks's 'album artist' metadata is favorited
-  xxCxx - work In Progress...
-  xDxxx - work In Progress...
-  Exxxx - work In Progress...
-  0 bit - disabled
-  1 bit - enabled
- (00001 - default)
-----------------------------------------------------------
+```
+#### Additional options for determining if an audio track should be considered marked as a favorite based on specified metadata item:
+```python
+#----------------------------------------------------------#
+# Advanced audio favorites configuration bitmask
+#     Requires keep_favorites_audio=1
+#  xxxxA - keep audio tracks based only on the first artist listed in the track's 'artist' metadata is favorited
+#  xxxBx - keep audio tracks based only on the first artist listed in the tracks's 'album artist' metadata is favorited
+#  xxCxx - work In Progress...
+#  xDxxx - work In Progress...
+#  Exxxx - work In Progress...
+#  0 bit - disabled
+#  1 bit - enabled
+# (00001 - default)
+#----------------------------------------------------------#
 keep_favorites_audio_advanced='00001'
-
-----------------------------------------------------------
- Advanced audio favorites all configuration bitmask
-     Requires matching keep_favorites_audio_advanced bitmask is enabled
-  xxxxa - xxxxA must be enabled above; will use ALL artists listed in the track's 'artist' metadata
-  xxxbx - xxxBx must be enabled above; will use ALL artists listed in the track's 'album artist' metadata
-  xxcxx - work In Progress...
-  xdxxx - work In Progress...
-  exxxx - work In Progress...
-  0 bit - disabled
-  1 bit - enabled
- (00000 - default)
-----------------------------------------------------------
+```
+#### Dependent on the above "advanced audio options", determines if only the first metadata item should be considered or all metadata items should be considered:
+```python
+#----------------------------------------------------------#
+# Advanced audio favorites all configuration bitmask
+#     Requires matching keep_favorites_audio_advanced bitmask is enabled
+#  xxxxa - xxxxA must be enabled above; will use ALL artists listed in the track's 'artist' metadata
+#  xxxbx - xxxBx must be enabled above; will use ALL artists listed in the track's 'album artist' metadata
+#  xxcxx - work In Progress...
+#  xdxxx - work In Progress...
+#  exxxx - work In Progress...
+#  0 bit - disabled
+#  1 bit - enabled
+# (00000 - default)
+#----------------------------------------------------------#
 keep_favorites_audio_advanced_any='00000'
-
-----------------------------------------------------------
- Whitelisting a library folder will treat all child media as if they are favorites
- ('' - default)
-----------------------------------------------------------
-whitelisted_library_folders='/path/to/library/folder0,path/to/libray/folder1,/path/to/library/folderX'
-
-----------------------------------------------------------
- 0 - Disable the ability to delete media (dry run mode)
- 1 - Enable the ability to delete media
- (0 - default)
-----------------------------------------------------------
+```
+#### Media in these library folders will be treated as if they are all marked as a favorite (i.e. media will not be deleted):
+```python
+#----------------------------------------------------------#
+# Whitelisting a library folder will treat all child media as if they are favorites
+# ('' - default)
+#----------------------------------------------------------#
+whitelisted_library_folders='smb://hieroglyph/Pharaoh/xbmc/Movies'
+```
+#### Allows the script to be run without deleting media (i.e. for testing and setup); Set to 1 when ready for "production":
+```python
+#----------------------------------------------------------#
+# 0 - Disable the ability to delete media (dry run mode)
+# 1 - Enable the ability to delete media
+# (0 - default)
+#----------------------------------------------------------#
 remove_files=0
+```
+#### Created first time the script runs; Do not manually change these unless you know what you are doing:
+```python
+#------------DO NOT MODIFY BELOW---------------------------#
 
-------------DO NOT MODIFY BELOW---------------------------
-server_brand='emby' - 0:emby or 1:jellyfin
-server_url='http://localhost:8096/basename' - Server name or ip address
-admin_username='Username' - Username for admin account
-access_token='0123456789abcdef0123456789abcdef0' - Token used to verify admin user requests to server
-user_key='abcdef0123456789abcdef0123456789a' - UserID of the account the script uses to monitor played status
-DEBUG=0 - 0:Do not display debug info; 1:Display debug info 
+#----------------------------------------------------------#
+# Server branding chosen during setup
+#  0 - 'emby'
+#  1 - 'jellyfin'
+# Server URL created during setup
+# Admin username chosen during setup
+# Access token requested from server during setup
+# User key of account to monitor played media chosen during setup
+#----------------------------------------------------------#
+server_brand='xyz'
+server_url='http://localhost.tld:8096/basename'
+admin_username='Username'
+access_token='0123456789abcdef0123456789abcdef0'
+user_key='abcdef0123456789abcdef0123456789a'
+DEBUG=0
+```
 
 # Usage
 Make media_cleaner.py executable and run ./media_cleaner.py.  If no conifg file is found it will prompt you to create one.  Once done you can run the script again to view files that will be deleted
