@@ -7,7 +7,7 @@ This script will go through all played movies, tv episodes, videos, trailers, an
 The first time you run the script it will attempt to create the config file by asking a few questions.
 
 ## Configuration Contents
-#### Media will be deleted once it has been played the number of days ago configured below:
+#### Media will be deleted once it has been played the configured number of days ago:
 ```python
 #----------------------------------------------------------#
 # Delete media type once it has been played x days ago
