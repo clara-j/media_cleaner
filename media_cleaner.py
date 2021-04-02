@@ -181,7 +181,7 @@ def generate_config():
     #config_file += "#----------------------------------------------------------#\n"
     config_file += "\n"
     config_file += "#----------------------------------------------------------#\n"
-    config_file += "# Media set as a favorite is not deleted\n"
+    config_file += "# Decide if media set as a favorite should be deleted\n"
     config_file += "# Favoriting a series, season, or network-channel will treat all child episodes as if they are favorites\n"
     config_file += "# Favoriting an artist, album-artist, or album will treat all child tracks as if they are favorites\n"
     config_file += "# Similar logic applies for other media types (episodes, trailers, etc...)\n"
