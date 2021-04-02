@@ -181,7 +181,7 @@ def generate_config():
     #config_file += "#----------------------------------------------------------#\n"
     config_file += "\n"
     config_file += "#----------------------------------------------------------#\n"
-    config_file += "# Favoriting a series or season will treat all child episodes as if they are favorites\n"
+    config_file += "# Favoriting a series, season, or network-channel will treat all child episodes as if they are favorites\n"
     config_file += "# Favoriting an artist, album-artist, or album will treat all child tracks as if they are favorites\n"
     config_file += "#  0 : ok to delete movie played not_played_age_movie=x days ago\n"
     config_file += "#  1 : do no delete movie played not_played_age_movie=x days ago\n"
@@ -197,33 +197,39 @@ def generate_config():
     #config_file += "#----------------------------------------------------------#\n"
     config_file += "\n"
     config_file += "#----------------------------------------------------------#\n"
-    config_file += "# Advanced audio favorites configuration bitmask\n"
-    config_file += "#     Requires 'keep_favorites_audio=1'\n"
-    config_file += "#  xxxxA - keep audio tracks based on if the FIRST artist listed in the track's 'artist' metadata is favorited\n"
-    config_file += "#  xxxBx - keep audio tracks based on if the FIRST artist listed in the tracks's 'album artist' metadata is favorited\n"
-    config_file += "#  xxCxx - genre work in progress...\n"
-    config_file += "#  xDxxx - genre work in progress...\n"
-    config_file += "#  Exxxx - genre work in progress...\n"
+    config_file += "# Advanced favorites configuration bitmask\n"
+    config_file += "#     Requires 'keep_favorites_*=1'\n"
+    config_file += "#  xxxxxxxA - keep audio tracks based on if the FIRST artist listed in the track's 'artist' metadata is favorited\n"
+    config_file += "#  xxxxxxBx - keep audio tracks based on if the FIRST artist listed in the tracks's 'album artist' metadata is favorited\n"
+    config_file += "#  xxxxxCxx - unused...\n"
+    config_file += "#  xxxxDxxx - unused...\n"
+    config_file += "#  xxxExxxx - unused...\n"
+    config_file += "#  xxFxxxxx - unused...\n"
+    config_file += "#  xGxxxxxx - unused...\n"
+    config_file += "#  Hxxxxxxx - unused...\n"
     config_file += "#  0 bit - disabled\n"
     config_file += "#  1 bit - enabled\n"
-    config_file += "# (00001 - default)\n"
+    config_file += "# (00000001 - default)\n"
     config_file += "#----------------------------------------------------------#\n"
-    config_file += "keep_favorites_audio_advanced='00001'\n"
+    config_file += "keep_favorites_advanced='00000001'\n"
     #config_file += "#----------------------------------------------------------#\n"
     config_file += "\n"
     config_file += "#----------------------------------------------------------#\n"
-    config_file += "# Advanced audio favorites any configuration bitmask\n"
-    config_file += "#     Requires matching bit in 'keep_favorites_audio_advanced' bitmask is enabled\n"
-    config_file += "#  xxxxa - xxxxA must be enabled above; will use ANY artists listed in the track's 'artist' metadata\n"
-    config_file += "#  xxxbx - xxxBx must be enabled above; will use ANY artists listed in the track's 'album artist' metadata\n"
-    config_file += "#  xxcxx - genre work in progress...\n"
-    config_file += "#  xdxxx - genre work in progress...\n"
-    config_file += "#  exxxx - genre work in progress...\n"
+    config_file += "# Advanced favorites any configuration bitmask\n"
+    config_file += "#     Requires matching bit in 'keep_favorites_advanced' bitmask is enabled\n"
+    config_file += "#  xxxxxxxa - xxxxxxxA must be enabled above; will use ANY artists listed in the track's 'artist' metadata\n"
+    config_file += "#  xxxxxxbx - xxxxxxBx must be enabled above; will use ANY artists listed in the track's 'album artist' metadata\n"
+    config_file += "#  xxxxxcxx - unused...\n"
+    config_file += "#  xxxxdxxx - unused...\n"
+    config_file += "#  xxxexxxx - unused...\n"
+    config_file += "#  xxfxxxxx - unused...\n"
+    config_file += "#  xgxxxxxx - unused...\n"
+    config_file += "#  hxxxxxxx - unused...\n"
     config_file += "#  0 bit - disabled\n"
     config_file += "#  1 bit - enabled\n"
-    config_file += "# (00000 - default)\n"
+    config_file += "# (00000000 - default)\n"
     config_file += "#----------------------------------------------------------#\n"
-    config_file += "keep_favorites_audio_advanced_any='00000'\n"
+    config_file += "keep_favorites_advanced_any='00000000'\n"
     #config_file += "#----------------------------------------------------------#\n"
     config_file += "\n"
     config_file += "#----------------------------------------------------------#\n"
@@ -551,29 +557,34 @@ def get_additional_item_info(server_url, user_key, itemId, auth_key):
     return(itemInfo)
 
 
-#determinne if track genre, album genre, or artist genre are set to favorite
-def get_isfav_MUSICgentaa(isfav_MUSICgentaa, item, server_url, user_key, auth_key):
-    #Work In Progress...
+def get_studio_item_info(server_url, user_key, studioName, auth_key):
+    #Get studio item information
+    url=server_url + '/Studios/' + urllib.parse.quote(studioName) + '?userId=' + user_key + '&api_key=' + auth_key
 
-    #Set bitmasks
-    adv_settings=int(cfg.keep_favorites_audio_advanced, 2)
-    adv_all=int(cfg.keep_favorites_audio_advanced_any, 2)
-    trackgenre_mask=int('00100', 2)
-    albumgenre_mask=int('01000', 2)
-    artistgenre_mask=int('10000', 2)
-    trackgenre_any_mask=trackgenre
-    albumgenre_any_mask=albumgenre
-    artistgenre_any_mask=artistgenre
+    if bool(cfg.DEBUG):
+        #DEBUG
+        print('-----------------------------------------------------------')
+        print(url)
+    with request.urlopen(url) as response:
+        if response.getcode() == 200:
+            source = response.read()
+            itemInfo = json.loads(source)
+            if bool(cfg.DEBUG):
+                #DEBUG
+                print('get_studio_item_info')
+                print2json(itemInfo)
+        else:
+            print('An error occurred while attempting to retrieve data from the API.')
 
-    return()
+    return(itemInfo)
 
 #determine if track, album, or artist are set to favorite
 def get_isfav_MUSICtaa(isfav_MUSICtaa, item, server_url, user_key, auth_key):
     #Set bitmasks
-    adv_settings=int(cfg.keep_favorites_audio_advanced, 2)
-    adv_all=int(cfg.keep_favorites_audio_advanced_any, 2)
-    trackartist_mask=int('00001', 2)
-    albumartist_mask=int('00010', 2)
+    adv_settings=int(cfg.keep_favorites_advanced, 2)
+    adv_all=int(cfg.keep_favorites_advanced_any, 2)
+    trackartist_mask=int('00000001', 2)
+    albumartist_mask=int('00000010', 2)
     trackartist_any_mask=trackartist_mask
     albumartist_any_mask=albumartist_mask
 
@@ -672,38 +683,44 @@ def get_isfav_MUSICtaa(isfav_MUSICtaa, item, server_url, user_key, auth_key):
 
     return(itemisfav_MUSICtaa)
 
-#determine if episode, season, or series are set to favorite
-def get_isfav_TVess(isfav_TVess, item, server_url, user_key, auth_key):
+#determine if episode, season, series, or network are set to favorite
+def get_isfav_TVessn(isfav_TVessn, item, server_url, user_key, auth_key):
     #Check if episode's favorite value already exists in dictionary
-    if not item['Id'] in isfav_TVess['episode']:
+    if not item['Id'] in isfav_TVessn['episode']:
         #Store if this episode is marked as a favorite
-        isfav_TVess['episode'][item['Id']] = item['UserData']['IsFavorite']
+        isfav_TVessn['episode'][item['Id']] = item['UserData']['IsFavorite']
     #Check if season's favorite value already exists in dictionary
-    if not item['SeasonId'] in isfav_TVess['season']:
+    if not item['SeasonId'] in isfav_TVessn['season']:
         #Store if the season is marked as a favorite
-        isfav_TVess['season'][item['SeasonId']] = get_additional_item_info(server_url, user_key, item['SeasonId'], auth_key)['UserData']['IsFavorite']
+        isfav_TVessn['season'][item['SeasonId']] = get_additional_item_info(server_url, user_key, item['SeasonId'], auth_key)['UserData']['IsFavorite']
     #Check if series' favorite value already exists in dictionary
-    if not item['SeriesId'] in isfav_TVess['series']:
+    if not item['SeriesId'] in isfav_TVessn['series']:
         #Store if the series is marked as a favorite
-        isfav_TVess['series'][item['SeriesId']] = get_additional_item_info(server_url, user_key, item['SeriesId'], auth_key)['UserData']['IsFavorite']
+        isfav_TVessn['series'][item['SeriesId']] = get_additional_item_info(server_url, user_key, item['SeriesId'], auth_key)['UserData']['IsFavorite']
+    #Check if network's favorite value already exists in dictionary
+    if not item['SeriesStudio'] in isfav_TVessn['network_channel']:
+        #Store if the channel/network/studio is marked as a favorite
+        isfav_TVessn['network_channel'][item['SeriesStudio']] = get_studio_item_info(server_url, user_key, item['SeriesStudio'], auth_key)['UserData']['IsFavorite']
     if bool(cfg.DEBUG):
         #DEBUG
         print('-----------------------------------------------------------')
-        print('Episode is favorite: ' + str(isfav_TVess['episode'][item['Id']]))
-        print(' Season is favorite: ' + str(isfav_TVess['season'][item['SeasonId']]))
-        print(' Series is favorite: ' + str(isfav_TVess['series'][item['SeriesId']]))
+        print('Episode is favorite: ' + str(isfav_TVessn['episode'][item['Id']]))
+        print(' Season is favorite: ' + str(isfav_TVessn['season'][item['SeasonId']]))
+        print(' Series is favorite: ' + str(isfav_TVessn['series'][item['SeriesId']]))
+        print('Network is favorite: ' + str(isfav_TVessn['network_channel'][item['SeriesStudio']]))
 
     #Check if episode, season, or series are a favorite
-    itemisfav_TVess=False
+    itemisfav_TVessn=False
     if (
-       (isfav_TVess['episode'][item['Id']]) or
-       (isfav_TVess['season'][item['SeasonId']]) or
-       (isfav_TVess['series'][item['SeriesId']]) #or
+       (isfav_TVessn['episode'][item['Id']]) or
+       (isfav_TVessn['season'][item['SeasonId']]) or
+       (isfav_TVessn['series'][item['SeriesId']]) or
+       (isfav_TVessn['network_channel'][item['SeriesStudio']]) #or
        ):
-        #Either the episode, season, or series are set as a favorite
-        itemisfav_TVess=True
+        #Either the episode, season, series, or network are set as a favorite
+        itemisfav_TVessn=True
 
-    return(itemisfav_TVess)
+    return(itemisfav_TVessn)
 
 
 #determine if media item is in whitelisted folder
@@ -742,7 +759,7 @@ def get_items(server_url, user_key, auth_key):
     print('Get List Of Played Media:')
     print('-----------------------------------------------------------')
 
-    url=server_url + '/Users/' + user_key  + '/Items?Recursive=true&IsPlayed=true&SortBy=Type,SeriesName,ParentIndexNumber,IndexNumber,Name&SortOrder=Ascending&api_key=' + auth_key
+    url=server_url + '/Users/' + user_key  + '/Items?Recursive=true&IsPlayed=true&SortBy=Type,SeriesName,ParentIndexNumber,IndexNumber,Name&SortOrder=Ascending&fields=SeriesStudio,Studios&api_key=' + auth_key
 
     if bool(cfg.DEBUG):
         #DEBUG
@@ -767,12 +784,10 @@ def get_items(server_url, user_key, auth_key):
     cut_off_date_audio=datetime.now(timezone.utc) - timedelta(cfg.not_played_age_audio)
     deleteItems=[]
 
-    #define empty dictionary for favorited TV Series', Seasons, and Episodes
-    isfav_TVess={'episode':{},'season':{},'series':{}}
+    #define empty dictionary for favorited TV Series', Seasons, Episodes, and Channels/Networks
+    isfav_TVessn={'episode':{},'season':{},'series':{},'network_channel':{}}
     #define empty dictionary for favorited Tracks, Albums, Artists
     isfav_MUSICtaa={'track':{},'album':{},'artist':{}}
-    #define empty dictionary for favorited Track Genres, Album Genres, Artist Genres
-    isfav_MUSICgentaa={'genres_track':{},'genres_album':{},'genres_artist':{}} #Work In Progress...
 
     #Determine if media item is to be deleted or kept
     for item in data['Items']:
@@ -809,7 +824,7 @@ def get_items(server_url, user_key, auth_key):
         #find tv-episode media items ready to delete
         elif ((item['Type'] == 'Episode') and not (cfg.not_played_age_episode == -1)):
             #Get if episode, season, or series is set as favorite
-            itemisfav_TVess=get_isfav_TVess(isfav_TVess, item, server_url, user_key, auth_key)
+            itemisfav_TVessn=get_isfav_TVessn(isfav_TVessn, item, server_url, user_key, auth_key)
             #Get if media item is whitelisted
             item_info=get_additional_item_info(server_url, user_key, item['Id'], auth_key)
             itemIsWhiteListed=get_iswhitelisted(item_info['Path'])
@@ -817,11 +832,11 @@ def get_items(server_url, user_key, auth_key):
                (cfg.not_played_age_episode >= 0) and
                (item['UserData']['PlayCount'] >= 1) and
                (cut_off_date_episode > parse(item['UserData']['LastPlayedDate'])) and
-               (not bool(cfg.keep_favorites_episode) or (not itemisfav_TVess)) and
+               (not bool(cfg.keep_favorites_episode) or (not itemisfav_TVessn)) and
                (not itemIsWhiteListed)
                ):
                 try:
-                    item_details=item['Type'] + ' - ' + item['SeriesName'] + ' - ' + get_season_episode(item['ParentIndexNumber'], item['IndexNumber']) + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(itemisfav_TVess) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'EpisodeID: ' + item['Id']
+                    item_details=item['Type'] + ' - ' + item['SeriesName'] + ' - ' + get_season_episode(item['ParentIndexNumber'], item['IndexNumber']) + ' - ' + item['Name'] + ' - ' + item['SeriesStudio'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(itemisfav_TVessn) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'EpisodeID: ' + item['Id']
                 except (KeyError):
                     item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
@@ -831,7 +846,7 @@ def get_items(server_url, user_key, auth_key):
                 deleteItems.append(item)
             else:
                 try:
-                    item_details=item['Type'] + ' - ' + item['SeriesName'] + ' - ' + get_season_episode(item['ParentIndexNumber'], item['IndexNumber']) + ' - ' + item['Name'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(itemisfav_TVess) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'EpisodeID: ' + item['Id']
+                    item_details=item['Type'] + ' - ' + item['SeriesName'] + ' - ' + get_season_episode(item['ParentIndexNumber'], item['IndexNumber']) + ' - ' + item['Name'] + ' - ' + item['SeriesStudio'] + ' - ' + get_days_since_played(item['UserData']['LastPlayedDate']) + ' - Favorite: ' + str(itemisfav_TVessn) + ' - Whitelisted: ' + str(itemIsWhiteListed) + ' - ' + 'EpisodeID: ' + item['Id']
                 except (KeyError):
                     item_details='  ' + item['Type'] + ' - ' + item['Name'] + ' - ' + item['Id']
                     if bool(cfg.DEBUG):
@@ -950,8 +965,8 @@ def get_items(server_url, user_key, auth_key):
     if bool(cfg.DEBUG):
         print('-----------------------------------------------------------')
         print('')
-        print('isfav_TVess: ')
-        print(isfav_TVess)
+        print('isfav_TVessn: ')
+        print(isfav_TVessn)
         print('')
         print('isfav_MUSICtaa: ')
         print(isfav_MUSICtaa)
@@ -1024,7 +1039,7 @@ def cfgCheck():
         (test <= 365000000))
        ):
         errorfound=True
-        error_found_in_media_cleaner_config_py+='not_played_age_movie must be an integer; valid range -1 thru 365000000\n'
+        error_found_in_media_cleaner_config_py+='TypeError: not_played_age_movie must be an integer; valid range -1 thru 365000000\n'
 
     test=cfg.not_played_age_episode
     if (
@@ -1107,25 +1122,27 @@ def cfgCheck():
         errorfound=True
         error_found_in_media_cleaner_config_py+='TypeError: keep_favorites_audio must be an integer; valid values 0 and 1\n'
 
-    test=cfg.keep_favorites_audio_advanced
+    test=cfg.keep_favorites_advanced
     if (
         not ((type(test) is str) and
         (int(test, 2) >= 0) and
-        (int(test, 2) <= 31) and
-        (len(test) == 5))
+        (int(test, 2) <= 255) and
+        (len(test) >=2) and
+        (len(test) <= 8))
        ):
         errorfound=True
-        error_found_in_media_cleaner_config_py+='TypeError: keep_favorites_audio_advanced must be a 5-digit binary string; valid range binary - 00000 thru 11111 (decimal - 0 thru 31)\n'
+        error_found_in_media_cleaner_config_py+='TypeError: keep_favorites_advanced should be an 8-digit binary string; valid range binary - 00000000 thru 11111111 (decimal - 0 thru 255)\n'
 
-    test=cfg.keep_favorites_audio_advanced_any
+    test=cfg.keep_favorites_advanced_any
     if (
         not ((type(test) is str) and
         (int(test, 2) >= 0) and
-        (int(test, 2) <= 31) and
-        (len(test) == 5))
+        (int(test, 2) <= 255) and
+        (len(test) >= 2) and
+        (len(test) <= 8))
        ):
         errorfound=True
-        error_found_in_media_cleaner_config_py+='TypeError: keep_favorites_audio_advanced_any must be a 5-digit binary string; valid range binary - 00000 thru 11111 (decimal - 0 thru 31)\n'
+        error_found_in_media_cleaner_config_py+='TypeError: keep_favorites_advanced_any should be an 8-digit binary string; valid range binary - 00000000 thru 11111111 (decimal - 0 thru 255)\n'
 
     test=cfg.whitelisted_library_folders
     if (
@@ -1188,6 +1205,7 @@ def cfgCheck():
         error_found_in_media_cleaner_config_py+='TypeError: DEBUG must be an integer; valid values 0 and 1'
 
     if (errorfound):
+        error_found_in_media_cleaner_config_py=error_found_in_media_cleaner_config_py.replace('TypeError: ','',1)
         raise TypeError(error_found_in_media_cleaner_config_py)
 
 ############# START OF SCRIPT #############
@@ -1213,8 +1231,8 @@ try:
         not hasattr(cfg, 'keep_favorites_video') or
         not hasattr(cfg, 'keep_favorites_trailer') or
         not hasattr(cfg, 'keep_favorites_audio') or
-        not hasattr(cfg, 'keep_favorites_audio_advanced') or
-        not hasattr(cfg, 'keep_favorites_audio_advanced_any') or
+        not hasattr(cfg, 'keep_favorites_advanced') or
+        not hasattr(cfg, 'keep_favorites_advanced_any') or
         not hasattr(cfg, 'remove_files') or
         not hasattr(cfg, 'whitelisted_library_folders') or
         not hasattr(cfg, 'server_brand') or
@@ -1318,12 +1336,12 @@ try:
         if not hasattr(cfg, 'keep_favorites_audio'):
             print('keep_favorites_audio=1')
             setattr(cfg, 'keep_favorites_audio', 1)
-        if not hasattr(cfg, 'keep_favorites_audio_advanced'):
-            print('keep_favorites_audio_advanced=00001')
-            setattr(cfg, 'keep_favorites_audio_advanced', '00001')
-        if not hasattr(cfg, 'keep_favorites_audio_advanced_any'):
-            print('keep_favorites_audio_advanced_any=00000')
-            setattr(cfg, 'keep_favorites_audio_advanced_any', '00000')
+        if not hasattr(cfg, 'keep_favorites_advanced'):
+            print('keep_favorites_advanced=00000001')
+            setattr(cfg, 'keep_favorites_advanced', '00000001')
+        if not hasattr(cfg, 'keep_favorites_advanced_any'):
+            print('keep_favorites_advanced_any=00000000')
+            setattr(cfg, 'keep_favorites_advanced_any', '00000000')
 
         if not hasattr(cfg, 'whitelisted_library_folders'):
             print('whitelisted_library_folders=\'\'')
