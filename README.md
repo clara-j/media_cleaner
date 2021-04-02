@@ -24,7 +24,7 @@ not_played_age_audio=-1
 #### When enabled, media will not be deleted if it is marked as a favorite:
 ```python
 #----------------------------------------------------------#
-# Favoriting a series, season, or channel/network/studio will treat all child episodes as if they are favorites
+# Favoriting a series, season, or network-channel will treat all child episodes as if they are favorites
 # Favoriting an artist, album-artist, or album will treat all child tracks as if they are favorites
 #  0 : ok to delete movie played not_played_age_movie=x days ago
 #  1 : do no delete movie played not_played_age_movie=x days ago
