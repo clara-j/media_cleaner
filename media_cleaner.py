@@ -201,12 +201,12 @@ def generate_config():
     config_file += "#     Requires 'keep_favorites_*=1'\n"
     config_file += "#  xxxxxxxA - keep audio tracks based on if the FIRST artist listed in the track's 'artist' metadata is favorited\n"
     config_file += "#  xxxxxxBx - keep audio tracks based on if the FIRST artist listed in the tracks's 'album artist' metadata is favorited\n"
-    config_file += "#  xxxxxCxx - unused...\n"
-    config_file += "#  xxxxDxxx - unused...\n"
-    config_file += "#  xxxExxxx - unused...\n"
-    config_file += "#  xxFxxxxx - unused...\n"
-    config_file += "#  xGxxxxxx - unused...\n"
-    config_file += "#  Hxxxxxxx - unused...\n"
+    config_file += "#  xxxxxCxx - reserved...\n"
+    config_file += "#  xxxxDxxx - reserved...\n"
+    config_file += "#  xxxExxxx - reserved...\n"
+    config_file += "#  xxFxxxxx - reserved...\n"
+    config_file += "#  xGxxxxxx - reserved...\n"
+    config_file += "#  Hxxxxxxx - reserved...\n"
     config_file += "#  0 bit - disabled\n"
     config_file += "#  1 bit - enabled\n"
     config_file += "# (00000001 - default)\n"
@@ -219,12 +219,12 @@ def generate_config():
     config_file += "#     Requires matching bit in 'keep_favorites_advanced' bitmask is enabled\n"
     config_file += "#  xxxxxxxa - xxxxxxxA must be enabled above; will use ANY artists listed in the track's 'artist' metadata\n"
     config_file += "#  xxxxxxbx - xxxxxxBx must be enabled above; will use ANY artists listed in the track's 'album artist' metadata\n"
-    config_file += "#  xxxxxcxx - unused...\n"
-    config_file += "#  xxxxdxxx - unused...\n"
-    config_file += "#  xxxexxxx - unused...\n"
-    config_file += "#  xxfxxxxx - unused...\n"
-    config_file += "#  xgxxxxxx - unused...\n"
-    config_file += "#  hxxxxxxx - unused...\n"
+    config_file += "#  xxxxxcxx - reserved...\n"
+    config_file += "#  xxxxdxxx - reserved...\n"
+    config_file += "#  xxxexxxx - reserved...\n"
+    config_file += "#  xxfxxxxx - reserved...\n"
+    config_file += "#  xgxxxxxx - reserved...\n"
+    config_file += "#  hxxxxxxx - reserved...\n"
     config_file += "#  0 bit - disabled\n"
     config_file += "#  1 bit - enabled\n"
     config_file += "# (00000000 - default)\n"
@@ -556,10 +556,13 @@ def get_additional_item_info(server_url, user_key, itemId, auth_key):
 
     return(itemInfo)
 
-
+#get additional channel/network/studio info needed to determine if item is favorite
 def get_studio_item_info(server_url, user_key, studioName, auth_key):
+    #Encode studio name
+    channel_network_name=urllib.parse.quote(studioName)
+
     #Get studio item information
-    url=server_url + '/Studios/' + urllib.parse.quote(studioName) + '?userId=' + user_key + '&api_key=' + auth_key
+    url=server_url + '/Studios/' + channel_network_name + '?userId=' + user_key + '&api_key=' + auth_key
 
     if bool(cfg.DEBUG):
         #DEBUG
