@@ -82,7 +82,7 @@ keep_favorites_advanced_any='00000000'
 # Whitelisting a library folder will treat all child media as if they are favorites
 # ('' - default)
 #----------------------------------------------------------#
-whitelisted_library_folders='smb://hieroglyph/Pharaoh/xbmc/Movies'
+whitelisted_library_folders='/Path/To/Library/Folder0,/Path/To/Library/Folder1,/Path/To/Library/FolderX'
 ```
 #### Allows the script to be run without deleting media (i.e. for testing and setup); Set to 1 when ready for "production":
 ```python
