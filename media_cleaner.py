@@ -200,12 +200,12 @@ def generate_config():
     config_file += "#----------------------------------------------------------#\n"
     config_file += "# Advanced favorites configuration bitmask\n"
     config_file += "#     Requires 'keep_favorites_*=1'\n"
-    config_file += "#  xxxxxxxA - keep audio tracks based on if the FIRST artist listed in the track's 'artist' metadata is favorited\n"
-    config_file += "#  xxxxxxBx - keep audio tracks based on if the FIRST artist listed in the tracks's 'album artist' metadata is favorited\n"
-    config_file += "#  xxxxxCxx - reserved...\n"
-    config_file += "#  xxxxDxxx - reserved...\n"
-    config_file += "#  xxxExxxx - reserved...\n"
-    config_file += "#  xxFxxxxx - reserved...\n"
+    config_file += "#  xxxxxxxA - keep_favorites_audio must be enabled; keep audio tracks based on if the FIRST artist listed in the track's 'artist' metadata is favorited\n"
+    config_file += "#  xxxxxxBx - keep_favorites_audio must be enabled; keep audio tracks based on if the FIRST artist listed in the tracks's 'album artist' metadata is favorited\n"
+    config_file += "#  xxxxxCxx - keep_favorites_audio must be enabled; keep audio tracks based on if the FIRST genre listed in the tracks's metadata is favorited\n"
+    config_file += "#  xxxxDxxx - keep_favorites_audio must be enabled; keep audio tracks based on if the FIRST genre listed in the album's metadata is favorited\n"
+    config_file += "#  xxxExxxx - keep_favorites_episode must be enabled; keep episode based on if the FIRST genre listed in the series' metadata is favorited (work in progress...)\n"
+    config_file += "#  xxFxxxxx - keep_favorites_movie must be enabled; keep movie based on if the FIRST genre listed in the movie's metadata is favorited (work in progress...)\n"
     config_file += "#  xGxxxxxx - reserved...\n"
     config_file += "#  Hxxxxxxx - reserved...\n"
     config_file += "#  0 bit - disabled\n"
@@ -218,12 +218,12 @@ def generate_config():
     config_file += "#----------------------------------------------------------#\n"
     config_file += "# Advanced favorites any configuration bitmask\n"
     config_file += "#     Requires matching bit in 'keep_favorites_advanced' bitmask is enabled\n"
-    config_file += "#  xxxxxxxa - xxxxxxxA must be enabled above; will use ANY artists listed in the track's 'artist' metadata\n"
-    config_file += "#  xxxxxxbx - xxxxxxBx must be enabled above; will use ANY artists listed in the track's 'album artist' metadata\n"
-    config_file += "#  xxxxxcxx - reserved...\n"
-    config_file += "#  xxxxdxxx - reserved...\n"
-    config_file += "#  xxxexxxx - reserved...\n"
-    config_file += "#  xxfxxxxx - reserved...\n"
+    config_file += "#  xxxxxxxa - xxxxxxxA must be enabled; will use ANY artists listed in the track's 'artist' metadata\n"
+    config_file += "#  xxxxxxbx - xxxxxxBx must be enabled; will use ANY artists listed in the track's 'album artist' metadata\n"
+    config_file += "#  xxxxxcxx - xxxxxCxx must be enabled; will use ANY genres listed in the track's metadata\n"
+    config_file += "#  xxxxdxxx - xxxxDxxx must be enabled; will use ANY genres listed in the album's metadata\n"
+    config_file += "#  xxxexxxx - xxxExxxx must be enabled; will use ANY genres listed in the series' metadata (work in progress...)\n"
+    config_file += "#  xxfxxxxx - xxFxxxxx must be enabled; will use ANY genres listed in the movie's metadata (work in progress...)\n"
     config_file += "#  xgxxxxxx - reserved...\n"
     config_file += "#  hxxxxxxx - reserved...\n"
     config_file += "#  0 bit - disabled\n"
@@ -538,7 +538,7 @@ def get_season_episode(season_number, episode_number):
 #get additional item info needed to determine if media item is in whitelist
 def get_additional_item_info(server_url, user_key, itemId, auth_key):
     #Get additonal item information
-    url=server_url + '/Users/' + user_key  + '/Items/' + itemId + '?api_key=' + auth_key
+    url=server_url + '/Users/' + user_key  + '/Items/' + itemId + '?fields=SeriesStudio,Studios,Genres&api_key=' + auth_key
 
     if bool(cfg.DEBUG):
         #DEBUG
@@ -586,69 +586,144 @@ def get_studio_item_info(server_url, user_key, studioName, auth_key):
 def get_isfav_MUSICtaa(isfav_MUSICtaa, item, server_url, user_key, auth_key):
     #Set bitmasks
     adv_settings=int(cfg.keep_favorites_advanced, 2)
-    adv_all=int(cfg.keep_favorites_advanced_any, 2)
+    adv_settings_any=int(cfg.keep_favorites_advanced_any, 2)
     trackartist_mask=int('00000001', 2)
     albumartist_mask=int('00000010', 2)
+    trackgenre_mask=int('00000100', 2)
+    albumgenre_mask=int('00001000', 2)
     trackartist_any_mask=trackartist_mask
     albumartist_any_mask=albumartist_mask
+    trackgenre_any_mask=trackgenre_mask
+    albumgenre_any_mask=albumgenre_mask
 
-    item_info = get_additional_item_info(server_url, user_key, item['Id'], auth_key)
+### Track #########################################################################################
+
     #Check if track's favorite value already exists in dictionary
     if not item['Id'] in isfav_MUSICtaa['track']:
         #Store if this track is marked as a favorite
-        isfav_MUSICtaa['track'][item['Id']] = item_info['UserData']['IsFavorite']
+        isfav_MUSICtaa['track'][item['Id']] = item['UserData']['IsFavorite']
 
-    item_info = get_additional_item_info(server_url, user_key, item['AlbumId'], auth_key)
+    #Check if bitmask for favotires by track genre is enabled
+    if (adv_settings & trackgenre_mask):
+        #Check if bitmask for any or first track genre is enabled
+        if not (adv_settings_any & trackgenre_any_mask):
+            genre_track_item_info = get_additional_item_info(server_url, user_key, item['GenreItems'][0]['Id'], auth_key)
+            #Check if track genre's favorite value already exists in dictionary
+            if not item['GenreItems'][0]['Id'] in isfav_MUSICtaa['trackgenre']:
+                #Store if first track genre is marked as favorite
+                isfav_MUSICtaa['trackgenre'][item['GenreItems'][0]['Id']] = genre_track_item_info['UserData']['IsFavorite']
+        else:
+            for trackgenre in range(len(item['GenreItems'])):
+                genre_track_item_info = get_additional_item_info(server_url, user_key, item['GenreItems'][trackgenre]['Id'], auth_key)
+                #Check if track genre's favorite value already exists in dictionary
+                if not item['GenreItems'][trackgenre]['Id'] in isfav_MUSICtaa['trackgenre']:
+                    #Store if any track genre is marked as a favorite
+                    isfav_MUSICtaa['trackgenre'][item['GenreItems'][trackgenre]['Id']] = genre_track_item_info['UserData']['IsFavorite']
+
+### End Track #####################################################################################
+
+### Album #########################################################################################
+
+    album_item_info = get_additional_item_info(server_url, user_key, item['AlbumId'], auth_key)
     #Check if album's favorite value already exists in dictionary
     if not item['AlbumId'] in isfav_MUSICtaa['album']:
         #Store if the album is marked as a favorite
-        isfav_MUSICtaa['album'][item['AlbumId']] = item_info['UserData']['IsFavorite']
+        isfav_MUSICtaa['album'][item['AlbumId']] = album_item_info['UserData']['IsFavorite']
+
+    #Check if bitmask for favotires by album genre is enabled
+    if (adv_settings & albumgenre_mask):
+        #Check if bitmask for any or first album genre is enabled
+        if not (adv_settings_any & albumgenre_any_mask):
+            genre_album_item_info = get_additional_item_info(server_url, user_key, album_item_info['GenreItems'][0]['Id'], auth_key)
+            #Check if album genre's favorite value already exists in dictionary
+            if not album_item_info['GenreItems'][0]['Id'] in isfav_MUSICtaa['albumgenre']:
+                #Store if first album genre is marked as favorite
+                isfav_MUSICtaa['albumgenre'][album_item_info['GenreItems'][0]['Id']] = genre_album_item_info['UserData']['IsFavorite']
+        else:
+            for albumgenre in range(len(album_item_info['GenreItems'])):
+                genre_alubm_item_info = get_additional_item_info(server_url, user_key, album_item_info['GenreItems'][albumgenre]['Id'], auth_key)
+                #Check if album genre's favorite value already exists in dictionary
+                if not album_item_info['GenreItems'][albumgenre]['Id'] in isfav_MUSICtaa['albumgenre']:
+                    #Store if any album genre is marked as a favorite
+                    isfav_MUSICtaa['albumgenre'][album_item_info['GenreItems'][albumgenre]['Id']] = genre_album_item_info['UserData']['IsFavorite']
+
+### End Album #####################################################################################
+
+### Artist ########################################################################################
 
     #Check if bitmask for favorites by track artist is enabled
     if (adv_settings & trackartist_mask):
         #Check if bitmask for any or first track artist is enabled
-        if not (adv_all & trackartist_any_mask):
-            item_info = get_additional_item_info(server_url, user_key, item['ArtistItems'][0]['Id'], auth_key)
+        if not (adv_settings_any & trackartist_any_mask):
+            artist_item_info = get_additional_item_info(server_url, user_key, item['ArtistItems'][0]['Id'], auth_key)
             #Check if artist's favorite value already exists in dictionary
             if not item['ArtistItems'][0]['Id'] in isfav_MUSICtaa['artist']:
                 #Store if first track artist is marked as favorite
-                isfav_MUSICtaa['artist'][item['ArtistItems'][0]['Id']] = item_info['UserData']['IsFavorite']
+                isfav_MUSICtaa['artist'][item['ArtistItems'][0]['Id']] = artist_item_info['UserData']['IsFavorite']
         else:
             for artist in range(len(item['ArtistItems'])):
-                item_info = get_additional_item_info(server_url, user_key, item['ArtistItems'][artist]['Id'], auth_key)
+                artist_item_info = get_additional_item_info(server_url, user_key, item['ArtistItems'][artist]['Id'], auth_key)
                 #Check if artist's favorite value already exists in dictionary
                 if not item['ArtistItems'][artist]['Id'] in isfav_MUSICtaa['artist']:
                     #Store if any track artist is marked as a favorite
-                    isfav_MUSICtaa['artist'][item['ArtistItems'][artist]['Id']] = item_info['UserData']['IsFavorite']
+                    isfav_MUSICtaa['artist'][item['ArtistItems'][artist]['Id']] = artist_item_info['UserData']['IsFavorite']
 
     #Check if bitmask for favotires by album artist is enabled
     if (adv_settings & albumartist_mask):
         #Check if bitmask for any or first album artist is enabled
-        if not (adv_all & albumartist_any_mask):
-            item_info = get_additional_item_info(server_url, user_key, item['AlbumArtists'][0]['Id'], auth_key)
+        if not (adv_settings_any & albumartist_any_mask):
+            artist_item_info = get_additional_item_info(server_url, user_key, item['AlbumArtists'][0]['Id'], auth_key)
             #Check if artist's favorite value already exists in dictionary
             if not item['AlbumArtists'][0]['Id'] in isfav_MUSICtaa['artist']:
                 #Store if first album artist is marked as favorite
-                isfav_MUSICtaa['artist'][item['AlbumArtists'][0]['Id']] = item_info['UserData']['IsFavorite']
+                isfav_MUSICtaa['artist'][item['AlbumArtists'][0]['Id']] = artist_item_info['UserData']['IsFavorite']
         else:
             for albumartist in range(len(item['AlbumArtists'])):
-                item_info = get_additional_item_info(server_url, user_key, item['AlbumArtists'][albumartist]['Id'], auth_key)
+                artist_item_info = get_additional_item_info(server_url, user_key, item['AlbumArtists'][albumartist]['Id'], auth_key)
                 #Check if artist's favorite value already exists in dictionary
                 if not item['AlbumArtists'][albumartist]['Id'] in isfav_MUSICtaa['artist']:
                     #Store if any album artist is marked as a favorite
-                    isfav_MUSICtaa['artist'][item['AlbumArtists'][albumartist]['Id']] = item_info['UserData']['IsFavorite']
+                    isfav_MUSICtaa['artist'][item['AlbumArtists'][albumartist]['Id']] = artist_item_info['UserData']['IsFavorite']
+
+### End Artist ####################################################################################
 
     if bool(cfg.DEBUG):
         #DEBUG
         print('-----------------------------------------------------------')
-        print('  Track is favorite: ' + str(isfav_MUSICtaa['track'][item['Id']]))
-        print('  Album is favorite: ' + str(isfav_MUSICtaa['album'][item['AlbumId']]))
+        print('     Track is favorite: ' + str(isfav_MUSICtaa['track'][item['Id']]))
+        print('     Album is favorite: ' + str(isfav_MUSICtaa['album'][item['AlbumId']]))
         if (adv_settings & trackartist_mask):
-            for artist in range(len(item['ArtistItems'])):
-                print('  ' + item['ArtistItems'][artist]['Name'] + ' is favorite: ' + str(isfav_MUSICtaa['artist'][item['ArtistItems'][artist]['Id']]))
+            if not (adv_settings_any & trackartist_any_mask):
+                print(' TrkArtist is favorite: ' + str(isfav_MUSICtaa['artist'][item['ArtistItems'][0]['Id']]))
+            else:
+                i=0
+                for artist in range(len(item['ArtistItems'])):
+                    print('TrkArtist' + str(i) + ' is favorite: ' + str(isfav_MUSICtaa['artist'][item['ArtistItems'][artist]['Id']]))
+                    i+=1
         if (adv_settings & albumartist_mask):
-            for albumartist in range(len(item['AlbumArtists'])):
-                print('  ' + item['AlbumArtists'][artist]['Name'] + ' is favorite: ' + str(isfav_MUSICtaa['artist'][item['AlbumArtists'][albumartist]['Id']]))
+            if not (adv_settings_any & albumartist_any_mask):
+                print(' AlbArtist is favorite: ' + str(isfav_MUSICtaa['artist'][item['AlbumArtists'][0]['Id']]))
+            else:
+                i=0
+                for albumartist in range(len(item['AlbumArtists'])):
+                    print('AlbArtist' + str(i) + ' is favorite: ' + str(isfav_MUSICtaa['artist'][item['AlbumArtists'][albumartist]['Id']]))
+                    i+=1
+        if (adv_settings & trackgenre_mask):
+            if not (adv_settings_any & trackgenre_any_mask):
+                print('  TrkGenre is favorite: ' + str(isfav_MUSICtaa['trackgenre'][item['GenreItems'][0]['Id']]))
+            else:
+                i=0
+                for trackgenre in range(len(item['GenreItems'])):
+                    print(' TrkGenre' + str(i) + ' is favorite: ' + str(isfav_MUSICtaa['trackgenre'][item['GenreItems'][trackgenre]['Id']]))
+                    i+=1
+        if (adv_settings & albumgenre_mask):
+            if not (adv_settings_any & albumgenre_any_mask):
+                print('  AlbGenre is favorite: ' + str(isfav_MUSICtaa['albumgenre'][album_item_info['GenreItems'][0]['Id']]))
+            else:
+                i=0
+                for albumgenre in range(len(album_item_info['GenreItems'])):
+                    print(' AlbGenre' + str(i) + ' is favorite: ' + str(isfav_MUSICtaa['albumgenre'][album_item_info['GenreItems'][albumgenre]['Id']]))
+                    i+=1
 
     #Check if track or album was stored as a favorite
     itemisfav_MUSICtrackalbum=False
@@ -662,27 +737,61 @@ def get_isfav_MUSICtaa(isfav_MUSICtaa, item, server_url, user_key, auth_key):
     #Check if track artist was stored as a favorite
     itemisfav_MUSICartist=False
     if (adv_settings & trackartist_mask):
-        #Check if any track artist was stored as a favorite
-        for artist in range(len(item['ArtistItems'])):
-            if (isfav_MUSICtaa['artist'][item['ArtistItems'][artist]['Id']]):
+        if not (adv_settings_any & trackartist_any_mask):
+            if (isfav_MUSICtaa['artist'][item['ArtistItems'][0]['Id']]):
                 itemisfav_MUSICartist=True
+        else:
+            #Check if any track artist was stored as a favorite
+            for artist in range(len(item['ArtistItems'])):
+                if (isfav_MUSICtaa['artist'][item['ArtistItems'][artist]['Id']]):
+                    itemisfav_MUSICartist=True
 
     #Check if album artist was stored as a favorite
     itemisfav_MUSICalbumartist=False
     if (adv_settings & albumartist_mask):
-        #Check if any album artist was stored as a favorite
-        for albumartist in range(len(item['AlbumArtists'])):
-            if (isfav_MUSICtaa['artist'][item['AlbumArtists'][albumartist]['Id']]):
-                itemisfav_MUSICalubmartist=True
+        if not (adv_settings_any & albumartist_any_mask):
+            if (isfav_MUSICtaa['artist'][item['AlbumArtists'][0]['Id']]):
+                itemisfav_MUSICalbumartist=True
+        else:
+            #Check if any album artist was stored as a favorite
+            for albumartist in range(len(item['AlbumArtists'])):
+                if (isfav_MUSICtaa['artist'][item['AlbumArtists'][albumartist]['Id']]):
+                    itemisfav_MUSICalubmartist=True
+
+    #Check if track genre was stored as a favorite
+    itemisfav_MUSICtrackgenre=False
+    if (adv_settings & trackgenre_mask):
+        if not (adv_settings_any & trackgenre_any_mask):
+            if (isfav_MUSICtaa['trackgenre'][item['GenreItems'][0]['Id']]):
+                itemisfav_MUSICtrackgenre=True
+        else:
+            #Check if any track genre was stored as a favorite
+            for trackgenre in range(len(item['GenreItems'])):
+                if (isfav_MUSICtaa['trackgenre'][item['GenreItems'][trackgenre]['Id']]):
+                    itemisfav_MUSICtrackgenre=True
+
+    #Check if album genre was stored as a favorite
+    itemisfav_MUSICalbumgenre=False
+    if (adv_settings & albumgenre_mask):
+        if not (adv_settings_any & albumgenre_any_mask):
+            if (isfav_MUSICtaa['albumgenre'][album_item_info['GenreItems'][0]['Id']]):
+                itemisfav_MUSICalbumgenre=True
+        else:
+            #Check if any album genre was stored as a favorite
+            for albumgenre in range(len(album_item_info['GenreItems'])):
+                if (isfav_MUSICtaa['albumgenre'][album_item_info['GenreItems'][albumgenre]['Id']]):
+                    itemisfav_MUSICalbumgenre=True
 
     #Check if track, album, or artist are a favorite
     itemisfav_MUSICtaa=False
     if (
        (itemisfav_MUSICtrackalbum) or
        (itemisfav_MUSICartist) or
-       (itemisfav_MUSICalbumartist)
+       (itemisfav_MUSICalbumartist) or
+       (itemisfav_MUSICtrackgenre) or
+       (itemisfav_MUSICalbumgenre)
        ):
-        #Either the track, album, or artist(s) are set as a favorite
+        #Either the track, album, artist(s), track genre(s), or album genre(s) are set as a favorite
         itemisfav_MUSICtaa=True
 
     return(itemisfav_MUSICtaa)
@@ -763,7 +872,7 @@ def get_items(server_url, user_key, auth_key):
     print('Get List Of Played Media:')
     print('-----------------------------------------------------------')
 
-    url=server_url + '/Users/' + user_key  + '/Items?Recursive=true&IsPlayed=true&SortBy=Type,SeriesName,ParentIndexNumber,IndexNumber,Name&SortOrder=Ascending&fields=SeriesStudio,Studios&api_key=' + auth_key
+    url=server_url + '/Users/' + user_key  + '/Items?Recursive=true&IsPlayed=true&SortBy=Type,SeriesName,AlbumArtist,ParentIndexNumber,IndexNumber,Name&SortOrder=Ascending&fields=SeriesStudio,Studios,Genres&api_key=' + auth_key
 
     if bool(cfg.DEBUG):
         #DEBUG
@@ -791,7 +900,7 @@ def get_items(server_url, user_key, auth_key):
     #define empty dictionary for favorited TV Series', Seasons, Episodes, and Channels/Networks
     isfav_TVessn={'episode':{},'season':{},'series':{},'network_channel':{}}
     #define empty dictionary for favorited Tracks, Albums, Artists
-    isfav_MUSICtaa={'track':{},'album':{},'artist':{}}
+    isfav_MUSICtaa={'track':{},'album':{},'artist':{},'trackgenre':{},'albumgenre':{}}
 
     #Determine if media item is to be deleted or kept
     for item in data['Items']:
