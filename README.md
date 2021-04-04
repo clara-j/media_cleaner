@@ -48,7 +48,7 @@ keep_favorites_audio=1
 #  xxxxxCxx - keep_favorites_audio must be enabled; keep audio tracks based on if the FIRST genre listed in the tracks's metadata is favorited
 #  xxxxDxxx - keep_favorites_audio must be enabled; keep audio tracks based on if the FIRST genre listed in the album's metadata is favorited
 #  xxxExxxx - keep_favorites_episode must be enabled; keep episode based on if the FIRST genre listed in the series' metadata is favorited
-#  xxFxxxxx - keep_favorites_movie must be enabled; keep movie based on if the FIRST genre listed in the movie's metadata is favorited (work in progress...)
+#  xxFxxxxx - keep_favorites_movie must be enabled; keep movie based on if the FIRST genre listed in the movie's metadata is favorited
 #  xGxxxxxx - reserved...
 #  Hxxxxxxx - reserved...
 #  0 bit - disabled
@@ -67,7 +67,7 @@ keep_favorites_advanced='00000001'
 #  xxxxxcxx - xxxxxCxx must be enabled; will use ANY genres listed in the track's metadata
 #  xxxxdxxx - xxxxDxxx must be enabled; will use ANY genres listed in the album's metadata
 #  xxxexxxx - xxxExxxx must be enabled; will use ANY genres listed in the series' metadata
-#  xxfxxxxx - xxFxxxxx must be enabled; will use ANY genres listed in the movie's metadata (work in progress...)
+#  xxfxxxxx - xxFxxxxx must be enabled; will use ANY genres listed in the movie's metadata
 #  xgxxxxxx - reserved...
 #  hxxxxxxx - reserved...
 #  0 bit - disabled
