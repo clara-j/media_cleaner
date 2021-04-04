@@ -1240,7 +1240,7 @@ def cfgCheck():
         not ((type(test) is str) and
         (int(test, 2) >= 0) and
         (int(test, 2) <= 255) and
-        (len(test) >=2) and
+        (len(test) >= 6) and
         (len(test) <= 8))
        ):
         errorfound=True
@@ -1251,7 +1251,7 @@ def cfgCheck():
         not ((type(test) is str) and
         (int(test, 2) >= 0) and
         (int(test, 2) <= 255) and
-        (len(test) >= 2) and
+        (len(test) >= 6) and
         (len(test) <= 8))
        ):
         errorfound=True
