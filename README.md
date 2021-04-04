@@ -38,7 +38,7 @@ keep_favorites_video=1
 keep_favorites_trailer=1
 keep_favorites_audio=1
 ```
-#### Additional options for determining if an audio track should be considered marked as a favorite based on specified metadata item:
+#### Additional options for determining if a media item should be considered marked as a favorite based on specified metadata item:
 ```python
 #----------------------------------------------------------#
 # Advanced favorites configuration bitmask
