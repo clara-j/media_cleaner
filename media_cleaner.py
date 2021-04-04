@@ -1105,6 +1105,23 @@ def list_delete_items(deleteItems):
         print('* Items Deleted = ' + str(len(deleteItems)) + '    *')
         print('-----------------------------------------------------------')
 
+    if (
+       (cfg.not_played_age_movie == -1) and
+       (cfg.not_played_age_episode == -1) and
+       (cfg.not_played_age_video == -1) and
+       (cfg.not_played_age_trailer == -1) and
+       (cfg.not_played_age_audio == -1)
+       ):
+        print('* ATTENTION!!!                             *')
+        print('* No media types are being monitored.      *')
+        print('* not_played_age_movie=-1                  *')
+        print('* not_played_age_episode=-1                *')
+        print('* not_played_age_video=-1                  *')
+        print('* not_played_age_trailer=-1                *')
+        print('* not_played_age_audio=-1                  *')
+        print('* Set at least one media type to >=0 days. *')
+        print('-----------------------------------------------------------')
+
     if len(deleteItems) > 0:
         for item in deleteItems:
             if item['Type'] == 'Movie':
