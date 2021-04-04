@@ -251,7 +251,7 @@ def generate_config():
     config_file += "#------------DO NOT MODIFY BELOW---------------------------#\n"
     config_file += "\n"
     config_file += "#----------------------------------------------------------#\n"
-    config_file += "# Server branding chosen during setup\n"
+    config_file += "# Server branding chosen during setup; only used during setup\n"
     config_file += "#  0 - 'emby'\n"
     config_file += "#  1 - 'jellyfin'\n"
     config_file += "# Server URL created during setup\n"
@@ -1296,17 +1296,21 @@ def cfgCheck():
 
     test=cfg.access_token
     if (
-        not (type(test) is str)
+        not ((type(test) is str) and
+        (len(test) == 32)) and
+        (str(test).isalnum()))
        ):
         errorfound=True
-        error_found_in_media_cleaner_config_py+='TypeError: access_token must be a string\n'
+        error_found_in_media_cleaner_config_py+='TypeError: access_token must be a 32-character alphanumeric string\n'
 
     test=cfg.user_key
     if (
-        not (type(test) is str)
+        not ((type(test) is str) and
+        (len(test) == 32)) and
+        (str(test).isalnum()))
        ):
         errorfound=True
-        error_found_in_media_cleaner_config_py+='TypeError: user_key must be a string\n'
+        error_found_in_media_cleaner_config_py+='TypeError: user_key must be a 32-character alphanumeric string\n'
 
     test=cfg.DEBUG
     if (
