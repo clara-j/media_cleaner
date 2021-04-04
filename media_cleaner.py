@@ -538,7 +538,7 @@ def get_season_episode(season_number, episode_number):
 #get additional item info needed to determine if media item is in whitelist
 def get_additional_item_info(server_url, user_key, itemId, auth_key):
     #Get additonal item information
-    url=server_url + '/Users/' + user_key  + '/Items/' + itemId + '?fields=SeriesStudio,Studios,Genres&api_key=' + auth_key
+    url=server_url + '/Users/' + user_key  + '/Items/' + str(itemId) + '?fields=SeriesStudio,Studios,Genres&api_key=' + auth_key
 
     if bool(cfg.DEBUG):
         #DEBUG
@@ -641,7 +641,7 @@ def get_isfav_MUSICtaa(isfav_MUSICtaa, item, server_url, user_key, auth_key):
                 isfav_MUSICtaa['albumgenre'][album_item_info['GenreItems'][0]['Id']] = genre_album_item_info['UserData']['IsFavorite']
         else:
             for albumgenre in range(len(album_item_info['GenreItems'])):
-                genre_alubm_item_info = get_additional_item_info(server_url, user_key, album_item_info['GenreItems'][albumgenre]['Id'], auth_key)
+                genre_album_item_info = get_additional_item_info(server_url, user_key, album_item_info['GenreItems'][albumgenre]['Id'], auth_key)
                 #Check if album genre's favorite value already exists in dictionary
                 if not album_item_info['GenreItems'][albumgenre]['Id'] in isfav_MUSICtaa['albumgenre']:
                     #Store if any album genre is marked as a favorite
@@ -798,32 +798,83 @@ def get_isfav_MUSICtaa(isfav_MUSICtaa, item, server_url, user_key, auth_key):
 
 #determine if episode, season, series, or network are set to favorite
 def get_isfav_TVessn(isfav_TVessn, item, server_url, user_key, auth_key):
+    adv_settings=int(cfg.keep_favorites_advanced, 2)
+    adv_settings_any=int(cfg.keep_favorites_advanced_any, 2)
+    seriesgenre_mask=int('00010000', 2)
+    seriesgenre_any_mask=seriesgenre_mask
+
+### Episode #######################################################################################
+
     #Check if episode's favorite value already exists in dictionary
     if not item['Id'] in isfav_TVessn['episode']:
         #Store if this episode is marked as a favorite
         isfav_TVessn['episode'][item['Id']] = item['UserData']['IsFavorite']
+
+### End Episode ###################################################################################
+
+### Season ########################################################################################
+
     #Check if season's favorite value already exists in dictionary
     if not item['SeasonId'] in isfav_TVessn['season']:
         #Store if the season is marked as a favorite
         isfav_TVessn['season'][item['SeasonId']] = get_additional_item_info(server_url, user_key, item['SeasonId'], auth_key)['UserData']['IsFavorite']
+
+### End Season ####################################################################################
+
+### Series ########################################################################################
+
+    series_item_info = get_additional_item_info(server_url, user_key, item['SeriesId'], auth_key)
     #Check if series' favorite value already exists in dictionary
     if not item['SeriesId'] in isfav_TVessn['series']:
         #Store if the series is marked as a favorite
-        isfav_TVessn['series'][item['SeriesId']] = get_additional_item_info(server_url, user_key, item['SeriesId'], auth_key)['UserData']['IsFavorite']
+        isfav_TVessn['series'][item['SeriesId']] = series_item_info['UserData']['IsFavorite']
+
+    #Check if bitmask for favotires by series genre is enabled
+    if (adv_settings & seriesgenre_mask):
+        #Check if bitmask for any or first series genre is enabled
+        if not (adv_settings_any & seriesgenre_any_mask):
+            genre_series_item_info = get_additional_item_info(server_url, user_key, series_item_info['GenreItems'][0]['Id'], auth_key)
+            #Check if series genre's favorite value already exists in dictionary
+            if not series_item_info['GenreItems'][0]['Id'] in isfav_TVessn['seriesgenre']:
+                #Store if first series genre is marked as favorite
+                isfav_TVessn['seriesgenre'][series_item_info['GenreItems'][0]['Id']] = genre_series_item_info['UserData']['IsFavorite']
+        else:
+            for seriesgenre in range(len(series_item_info['GenreItems'])):
+                genre_series_item_info = get_additional_item_info(server_url, user_key, series_item_info['GenreItems'][seriesgenre]['Id'], auth_key)
+                #Check if series genre's favorite value already exists in dictionary
+                if not series_item_info['GenreItems'][seriesgenre]['Id'] in isfav_TVessn['seriesgenre']:
+                    #Store if any series genre is marked as a favorite
+                    isfav_TVessn['seriesgenre'][series_item_info['GenreItems'][seriesgenre]['Id']] = genre_series_item_info['UserData']['IsFavorite']
+
+### End Series ####################################################################################
+
+### Network #######################################################################################
+
     #Check if network's favorite value already exists in dictionary
     if not item['SeriesStudio'] in isfav_TVessn['networkchannel']:
         #Store if the channel/network/studio is marked as a favorite
         isfav_TVessn['networkchannel'][item['SeriesStudio']] = get_studio_item_info(server_url, user_key, item['SeriesStudio'], auth_key)['UserData']['IsFavorite']
+
+### End Network ###################################################################################
+
     if bool(cfg.DEBUG):
         #DEBUG
         print('-----------------------------------------------------------')
-        print('Episode is favorite: ' + str(isfav_TVessn['episode'][item['Id']]))
-        print(' Season is favorite: ' + str(isfav_TVessn['season'][item['SeasonId']]))
-        print(' Series is favorite: ' + str(isfav_TVessn['series'][item['SeriesId']]))
-        print('Network is favorite: ' + str(isfav_TVessn['networkchannel'][item['SeriesStudio']]))
+        print('  Episode is favorite: ' + str(isfav_TVessn['episode'][item['Id']]))
+        print('   Season is favorite: ' + str(isfav_TVessn['season'][item['SeasonId']]))
+        print('   Series is favorite: ' + str(isfav_TVessn['series'][item['SeriesId']]))
+        print('  Network is favorite: ' + str(isfav_TVessn['networkchannel'][item['SeriesStudio']]))
+        if (adv_settings & seriesgenre_mask):
+            if not (adv_settings_any & seriesgenre_any_mask):
+                print(' SerGenre is favorite: ' + str(isfav_TVessn['seriesgenre'][series_item_info['GenreItems'][0]['Id']]))
+            else:
+                i=0
+                for seriesgenre in range(len(series_item_info['GenreItems'])):
+                    print('SerGenre' + str(i) + ' is favorite: ' + str(isfav_TVessn['seriesgenre'][series_item_info['GenreItems'][seriesgenre]['Id']]))
+                    i+=1
 
     #Check if episode, season, or series are a favorite
-    itemisfav_TVessn=False
+    itemisfav_TVepiseasernet=False
     if (
        (isfav_TVessn['episode'][item['Id']]) or
        (isfav_TVessn['season'][item['SeasonId']]) or
@@ -831,6 +882,27 @@ def get_isfav_TVessn(isfav_TVessn, item, server_url, user_key, auth_key):
        (isfav_TVessn['networkchannel'][item['SeriesStudio']]) #or
        ):
         #Either the episode, season, series, or network are set as a favorite
+        itemisfav_TVepiseasernet=True
+
+    #Check if track genre was stored as a favorite
+    itemisfav_TVseriesgenre=False
+    if (adv_settings & seriesgenre_mask):
+        if not (adv_settings_any & seriesgenre_any_mask):
+            if (isfav_TVessn['seriesgenre'][series_item_info['GenreItems'][0]['Id']]):
+                itemisfav_TVseriesgenre=True
+        else:
+            #Check if any track genre was stored as a favorite
+            for seriesgenre in range(len(series_item_info['GenreItems'])):
+                if (isfav_TVessn['seriesgenre'][series_item_info['GenreItems'][seriesgenre]['Id']]):
+                    itemisfav_TVseriesgenre=True
+
+    #Check if episode, season, series, series genre(s), or network/channel are a favorite
+    itemisfav_TVessn=False
+    if (
+       (itemisfav_TVepiseasernet) or
+       (itemisfav_TVseriesgenre)
+       ):
+        #Either the episode, season, series, series genre(s), or network/channel are set as a favorite
         itemisfav_TVessn=True
 
     return(itemisfav_TVessn)
@@ -898,7 +970,7 @@ def get_items(server_url, user_key, auth_key):
     deleteItems=[]
 
     #define empty dictionary for favorited TV Series', Seasons, Episodes, and Channels/Networks
-    isfav_TVessn={'episode':{},'season':{},'series':{},'networkchannel':{}}
+    isfav_TVessn={'episode':{},'season':{},'series':{},'networkchannel':{},'seriesgenre':{}}
     #define empty dictionary for favorited Tracks, Albums, Artists
     isfav_MUSICtaa={'track':{},'album':{},'artist':{},'trackgenre':{},'albumgenre':{}}
 
