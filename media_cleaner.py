@@ -889,6 +889,10 @@ def get_items(server_url, user_key, auth_key):
         else:
             print('An error occurred while attempting to retrieve data from the API.')
 
+    #DEBUG
+    print('played_media_data')
+    print2json(data)
+
     #Go through all items and get ones not played in X days
     cut_off_date_movie=datetime.now(timezone.utc) - timedelta(cfg.not_played_age_movie)
     cut_off_date_episode=datetime.now(timezone.utc) - timedelta(cfg.not_played_age_episode)
