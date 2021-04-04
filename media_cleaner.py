@@ -560,10 +560,10 @@ def get_additional_item_info(server_url, user_key, itemId, auth_key):
 #get additional channel/network/studio info needed to determine if item is favorite
 def get_studio_item_info(server_url, user_key, studioName, auth_key):
     #Encode studio name
-    channel_network_name=urllib.parse.quote(studioName)
+    networkchannel_name=urllib.parse.quote(studioName)
 
     #Get studio item information
-    url=server_url + '/Studios/' + channel_network_name + '?userId=' + user_key + '&api_key=' + auth_key
+    url=server_url + '/Studios/' + networkchannel_name + '?userId=' + user_key + '&api_key=' + auth_key
 
     if bool(cfg.DEBUG):
         #DEBUG
@@ -811,16 +811,16 @@ def get_isfav_TVessn(isfav_TVessn, item, server_url, user_key, auth_key):
         #Store if the series is marked as a favorite
         isfav_TVessn['series'][item['SeriesId']] = get_additional_item_info(server_url, user_key, item['SeriesId'], auth_key)['UserData']['IsFavorite']
     #Check if network's favorite value already exists in dictionary
-    if not item['SeriesStudio'] in isfav_TVessn['network_channel']:
+    if not item['SeriesStudio'] in isfav_TVessn['networkchannel']:
         #Store if the channel/network/studio is marked as a favorite
-        isfav_TVessn['network_channel'][item['SeriesStudio']] = get_studio_item_info(server_url, user_key, item['SeriesStudio'], auth_key)['UserData']['IsFavorite']
+        isfav_TVessn['networkchannel'][item['SeriesStudio']] = get_studio_item_info(server_url, user_key, item['SeriesStudio'], auth_key)['UserData']['IsFavorite']
     if bool(cfg.DEBUG):
         #DEBUG
         print('-----------------------------------------------------------')
         print('Episode is favorite: ' + str(isfav_TVessn['episode'][item['Id']]))
         print(' Season is favorite: ' + str(isfav_TVessn['season'][item['SeasonId']]))
         print(' Series is favorite: ' + str(isfav_TVessn['series'][item['SeriesId']]))
-        print('Network is favorite: ' + str(isfav_TVessn['network_channel'][item['SeriesStudio']]))
+        print('Network is favorite: ' + str(isfav_TVessn['networkchannel'][item['SeriesStudio']]))
 
     #Check if episode, season, or series are a favorite
     itemisfav_TVessn=False
@@ -828,7 +828,7 @@ def get_isfav_TVessn(isfav_TVessn, item, server_url, user_key, auth_key):
        (isfav_TVessn['episode'][item['Id']]) or
        (isfav_TVessn['season'][item['SeasonId']]) or
        (isfav_TVessn['series'][item['SeriesId']]) or
-       (isfav_TVessn['network_channel'][item['SeriesStudio']]) #or
+       (isfav_TVessn['networkchannel'][item['SeriesStudio']]) #or
        ):
         #Either the episode, season, series, or network are set as a favorite
         itemisfav_TVessn=True
@@ -898,7 +898,7 @@ def get_items(server_url, user_key, auth_key):
     deleteItems=[]
 
     #define empty dictionary for favorited TV Series', Seasons, Episodes, and Channels/Networks
-    isfav_TVessn={'episode':{},'season':{},'series':{},'network_channel':{}}
+    isfav_TVessn={'episode':{},'season':{},'series':{},'networkchannel':{}}
     #define empty dictionary for favorited Tracks, Albums, Artists
     isfav_MUSICtaa={'track':{},'album':{},'artist':{},'trackgenre':{},'albumgenre':{}}
 
@@ -1297,7 +1297,7 @@ def cfgCheck():
     test=cfg.access_token
     if (
         not ((type(test) is str) and
-        (len(test) == 32)) and
+        (len(test) == 32) and
         (str(test).isalnum()))
        ):
         errorfound=True
@@ -1306,7 +1306,7 @@ def cfgCheck():
     test=cfg.user_key
     if (
         not ((type(test) is str) and
-        (len(test) == 32)) and
+        (len(test) == 32) and
         (str(test).isalnum()))
        ):
         errorfound=True
