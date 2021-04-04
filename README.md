@@ -98,7 +98,7 @@ remove_files=0
 #------------DO NOT MODIFY BELOW---------------------------#
 
 #----------------------------------------------------------#
-# Server branding chosen during setup
+# Server branding chosen during setup; only used during setup
 #  0 - 'emby'
 #  1 - 'jellyfin'
 # Server URL created during setup
